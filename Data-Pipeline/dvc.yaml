@@ -1,0 +1,146 @@
+# DVC pipeline for the VibeSpace data pipeline.
+# Stages mirror the Airflow DAG. Airflow runs the steps and its final task
+# records the outputs with `dvc commit` + `dvc push`; `dvc repro` reproduces
+# the same stages without Airflow. Caches and history folders use
+# `persist: true` so a re-run does not delete them first.
+stages:
+  download_movielens:
+    cmd: python -m scripts.run_pipeline download_movielens
+    deps:
+      - scripts/acquire_movielens.py
+    outs:
+      - data/raw/movielens:
+          persist: true
+
+  fetch_tmdb:
+    cmd: python -m scripts.run_pipeline fetch_tmdb
+    deps:
+      - scripts/acquire_tmdb.py
+      - data/raw/movielens
+    outs:
+      - data/raw/tmdb:
+          persist: true
+      - data/interim/tmdb_selection.parquet
+      - data/interim/fetch_tmdb_summary.json
+
+  build_tmdb_table:
+    cmd: python -m scripts.run_pipeline build_tmdb_table
+    deps:
+      - scripts/build_tmdb_table.py
+      - data/raw/tmdb
+      - data/interim/tmdb_selection.parquet
+    outs:
+      - data/interim/tmdb_movies.parquet
+      - data/interim/tmdb_quarantine.parquet
+      - data/interim/tmdb_quarantine_files
+      - data/interim/build_tmdb_table_summary.json
+
+  validate_raw:
+    cmd: python -m scripts.run_pipeline validate_raw
+    deps:
+      - scripts/validate.py
+      - scripts/gx_suites.py
+      - data/raw/movielens
+      - data/interim/tmdb_movies.parquet
+    outs:
+      - data/metrics/validation_raw.json
+
+  join_ids:
+    cmd: python -m scripts.run_pipeline join_ids
+    deps:
+      - scripts/join_ids.py
+      - data/raw/movielens
+      - data/interim/tmdb_selection.parquet
+      - data/interim/tmdb_movies.parquet
+      - data/metrics/validation_raw.json
+    outs:
+      - data/interim/joined.parquet
+      - data/interim/join_quarantine.parquet
+      - data/interim/join_stats.json
+
+  clean:
+    cmd: python -m scripts.run_pipeline clean
+    deps:
+      - scripts/clean.py
+      - data/interim/joined.parquet
+    outs:
+      - data/processed/movies_clean.parquet
+      - data/processed/clean_quarantine.parquet
+      - data/processed/clean_summary.json
+
+  build_dna_labels:
+    cmd: python -m scripts.run_pipeline build_dna_labels
+    deps:
+      - scripts/build_dna_labels.py
+      - scripts/dna_sanity_report.py
+      - configs/movie_dna_mapping_v1.yaml
+      - data/raw/movielens
+    outs:
+      - data/processed/movie_dna_labels.parquet
+      - data/processed/dna_labels_summary.json
+      - reports/dna_sanity_report.md:
+          cache: false
+
+  encode_plots:
+    cmd: python -m scripts.run_pipeline encode_plots
+    deps:
+      - scripts/encode_plots.py
+      - data/processed/movies_clean.parquet
+    outs:
+      - data/processed/plot_embeddings.npy
+      - data/processed/plot_embeddings_index.parquet
+      - data/processed/encode_plots_summary.json
+      - data/cache/embeddings:
+          persist: true
+
+  validate_processed:
+    cmd: python -m scripts.run_pipeline validate_processed
+    deps:
+      - scripts/validate.py
+      - scripts/gx_suites.py
+      - data/processed/movies_clean.parquet
+      - data/processed/movie_dna_labels.parquet
+      - data/processed/plot_embeddings.npy
+      - data/processed/plot_embeddings_index.parquet
+      - data/interim/join_stats.json
+    outs:
+      - data/metrics/validation_processed.json
+
+  generate_stats:
+    cmd: python -m scripts.run_pipeline generate_stats
+    deps:
+      - scripts/generate_stats.py
+      - data/processed/movies_clean.parquet
+      - data/processed/movie_dna_labels.parquet
+      - data/processed/plot_embeddings_index.parquet
+      - data/metrics/validation_processed.json
+    outs:
+      - data/metrics/stats:
+          persist: true
+      - data/metrics/stats_current.json
+
+  detect_anomalies:
+    cmd: python -m scripts.run_pipeline detect_anomalies
+    deps:
+      - scripts/anomalies.py
+      - scripts/alerts.py
+      - data/processed/movies_clean.parquet
+      - data/metrics/stats_current.json
+    outs:
+      - data/metrics/anomalies_current.json
+      - data/metrics/anomalies:
+          persist: true
+
+  bias_slicing:
+    cmd: python -m scripts.run_pipeline bias_slicing
+    deps:
+      - scripts/bias_slicing.py
+      - data/processed/movies_clean.parquet
+      - data/processed/movie_dna_labels.parquet
+      - data/processed/plot_embeddings.npy
+      - data/processed/plot_embeddings_index.parquet
+      - data/metrics/validation_processed.json
+    outs:
+      - data/metrics/bias
+      - reports/bias_report.md:
+          cache: false
