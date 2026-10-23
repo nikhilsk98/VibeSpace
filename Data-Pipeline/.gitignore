@@ -1,0 +1,23 @@
+# Data lives in DVC, never in Git (dvc.yaml / dvc.lock are committed instead)
+/data/*
+!/data/.gitkeep
+
+# Logs (Airflow task logs, pipeline.log, alerts.log)
+/logs/*
+!/logs/.gitkeep
+
+# Secrets and local environments
+.env
+.env.*
+!.env.example
+.venv/
+.cache/
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage*
+coverage.xml
+htmlcov/

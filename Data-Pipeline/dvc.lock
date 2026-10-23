@@ -1,0 +1,358 @@
+schema: '2.0'
+stages:
+  download_movielens:
+    cmd: python -m scripts.run_pipeline download_movielens
+    deps:
+    - path: scripts/acquire_movielens.py
+      hash: md5
+      md5: 33609650a26812f55e1209ec751c1bb4
+      size: 10762
+    outs:
+    - path: data/raw/movielens
+      hash: md5
+      md5: 9d63a5be2c367eac7addf17a1d383ac6.dir
+      size: 1418650298
+      nfiles: 9
+  fetch_tmdb:
+    cmd: python -m scripts.run_pipeline fetch_tmdb
+    deps:
+    - path: data/raw/movielens
+      hash: md5
+      md5: 9d63a5be2c367eac7addf17a1d383ac6.dir
+      size: 1418650298
+      nfiles: 9
+    - path: scripts/acquire_tmdb.py
+      hash: md5
+      md5: 3d3b554ab14a62e05234acb652fa8d25
+      size: 14817
+    outs:
+    - path: data/interim/fetch_tmdb_summary.json
+      hash: md5
+      md5: a3497464c5f33ed05401899f8cdd507a
+      size: 312
+    - path: data/interim/tmdb_selection.parquet
+      hash: md5
+      md5: c00dc2a08e04e361baab11ce2a76ecc5
+      size: 167748
+    - path: data/raw/tmdb
+      hash: md5
+      md5: 3145edf1cfedb9321810ecb72c3daaea.dir
+      size: 38162529
+      nfiles: 13798
+  build_tmdb_table:
+    cmd: python -m scripts.run_pipeline build_tmdb_table
+    deps:
+    - path: data/interim/tmdb_selection.parquet
+      hash: md5
+      md5: c00dc2a08e04e361baab11ce2a76ecc5
+      size: 167748
+    - path: data/raw/tmdb
+      hash: md5
+      md5: 3145edf1cfedb9321810ecb72c3daaea.dir
+      size: 38162529
+      nfiles: 13798
+    - path: scripts/build_tmdb_table.py
+      hash: md5
+      md5: 908ff81590cf7e9079c655a5657bf884
+      size: 7027
+    outs:
+    - path: data/interim/build_tmdb_table_summary.json
+      hash: md5
+      md5: 421efa755e70737ee1be6ab195169cb9
+      size: 102
+    - path: data/interim/tmdb_movies.parquet
+      hash: md5
+      md5: f463f2c3f837ce945c5a6c42fa038fb9
+      size: 4676651
+    - path: data/interim/tmdb_quarantine.parquet
+      hash: md5
+      md5: 1a36b18776ab52c1a2a4622e440dbb6a
+      size: 1908
+    - path: data/interim/tmdb_quarantine_files
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+  validate_raw:
+    cmd: python -m scripts.run_pipeline validate_raw
+    deps:
+    - path: data/interim/tmdb_movies.parquet
+      hash: md5
+      md5: f463f2c3f837ce945c5a6c42fa038fb9
+      size: 4676651
+    - path: data/raw/movielens
+      hash: md5
+      md5: 9d63a5be2c367eac7addf17a1d383ac6.dir
+      size: 1418650298
+      nfiles: 9
+    - path: scripts/gx_suites.py
+      hash: md5
+      md5: 49bb95d9aa6cff37a7edc2e1b2697c6e
+      size: 4803
+    - path: scripts/validate.py
+      hash: md5
+      md5: 4cefdcf76f87aefdaa4585dcb653eb58
+      size: 8430
+    outs:
+    - path: data/metrics/validation_raw.json
+      hash: md5
+      md5: bdb06155cdd22afcf1b9a7ce20857231
+      size: 9398
+  join_ids:
+    cmd: python -m scripts.run_pipeline join_ids
+    deps:
+    - path: data/interim/tmdb_movies.parquet
+      hash: md5
+      md5: f463f2c3f837ce945c5a6c42fa038fb9
+      size: 4676651
+    - path: data/interim/tmdb_selection.parquet
+      hash: md5
+      md5: c00dc2a08e04e361baab11ce2a76ecc5
+      size: 167748
+    - path: data/metrics/validation_raw.json
+      hash: md5
+      md5: bdb06155cdd22afcf1b9a7ce20857231
+      size: 9398
+    - path: data/raw/movielens
+      hash: md5
+      md5: 9d63a5be2c367eac7addf17a1d383ac6.dir
+      size: 1418650298
+      nfiles: 9
+    - path: scripts/join_ids.py
+      hash: md5
+      md5: 7bf712970712e3f142833082c2436f2e
+      size: 6116
+    outs:
+    - path: data/interim/join_quarantine.parquet
+      hash: md5
+      md5: 3cc5c0ff2b0d1768bdaa0b30001a109c
+      size: 8781
+    - path: data/interim/join_stats.json
+      hash: md5
+      md5: b9a35e08b0a344e3cc5d0ce882cfc6fc
+      size: 193
+    - path: data/interim/joined.parquet
+      hash: md5
+      md5: cafbc5ca1a30ecbeb4894a4bd6b24ff4
+      size: 5338836
+  clean:
+    cmd: python -m scripts.run_pipeline clean
+    deps:
+    - path: data/interim/joined.parquet
+      hash: md5
+      md5: cafbc5ca1a30ecbeb4894a4bd6b24ff4
+      size: 5338836
+    - path: scripts/clean.py
+      hash: md5
+      md5: f3531ca1f0cc858db65d8afedaae5bab
+      size: 9347
+    outs:
+    - path: data/processed/clean_quarantine.parquet
+      hash: md5
+      md5: f24c75177b7d39be51aaab56c2e686e7
+      size: 2378
+    - path: data/processed/clean_summary.json
+      hash: md5
+      md5: e6fd20a5dfb59e51cc3ad2ee1e464177
+      size: 1139
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+  build_dna_labels:
+    cmd: python -m scripts.run_pipeline build_dna_labels
+    deps:
+    - path: configs/movie_dna_mapping_v1.yaml
+      hash: md5
+      md5: c7d81b65ccc811e92611e4df5cf14879
+      size: 2265
+    - path: data/raw/movielens
+      hash: md5
+      md5: 9d63a5be2c367eac7addf17a1d383ac6.dir
+      size: 1418650298
+      nfiles: 9
+    - path: scripts/build_dna_labels.py
+      hash: md5
+      md5: 4986f9b2c32364928f83e1088f9ad8ff
+      size: 9320
+    - path: scripts/dna_sanity_report.py
+      hash: md5
+      md5: 48945d29f26f8511cc2c3c88f931ea84
+      size: 5768
+    outs:
+    - path: data/processed/dna_labels_summary.json
+      hash: md5
+      md5: d1e689ebad640854bc5739a88b335ea3
+      size: 428
+    - path: data/processed/movie_dna_labels.parquet
+      hash: md5
+      md5: ac419d82fd6f60128b46da2580dbfaf5
+      size: 2060806
+    - path: reports/dna_sanity_report.md
+      hash: md5
+      md5: 6de2e7c8cd8c68cc9303d7802841664f
+      size: 9779
+  encode_plots:
+    cmd: python -m scripts.run_pipeline encode_plots
+    deps:
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+    - path: scripts/encode_plots.py
+      hash: md5
+      md5: 5cb18808e198d555ab2aafe6c5bd8dfb
+      size: 7131
+    outs:
+    - path: data/cache/embeddings
+      hash: md5
+      md5: 59e229b1c01b20512b624e9232ff86e8.dir
+      size: 19895253
+      nfiles: 1
+    - path: data/processed/encode_plots_summary.json
+      hash: md5
+      md5: ca7004ee7944cc847722aa220f94643f
+      size: 194
+    - path: data/processed/plot_embeddings.npy
+      hash: md5
+      md5: 67727ce8bdcf92620cb8cdffbb5bfb06
+      size: 20991104
+    - path: data/processed/plot_embeddings_index.parquet
+      hash: md5
+      md5: aab2f99eb838a4abe623af59a8ffb2d6
+      size: 737123
+  validate_processed:
+    cmd: python -m scripts.run_pipeline validate_processed
+    deps:
+    - path: data/interim/join_stats.json
+      hash: md5
+      md5: b9a35e08b0a344e3cc5d0ce882cfc6fc
+      size: 193
+    - path: data/processed/movie_dna_labels.parquet
+      hash: md5
+      md5: ac419d82fd6f60128b46da2580dbfaf5
+      size: 2060806
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+    - path: data/processed/plot_embeddings.npy
+      hash: md5
+      md5: 67727ce8bdcf92620cb8cdffbb5bfb06
+      size: 20991104
+    - path: data/processed/plot_embeddings_index.parquet
+      hash: md5
+      md5: aab2f99eb838a4abe623af59a8ffb2d6
+      size: 737123
+    - path: scripts/gx_suites.py
+      hash: md5
+      md5: 49bb95d9aa6cff37a7edc2e1b2697c6e
+      size: 4803
+    - path: scripts/validate.py
+      hash: md5
+      md5: 4cefdcf76f87aefdaa4585dcb653eb58
+      size: 8430
+    outs:
+    - path: data/metrics/validation_processed.json
+      hash: md5
+      md5: 29a91cc8a25a23c8efc4ef5793eaa04a
+      size: 19016
+  generate_stats:
+    cmd: python -m scripts.run_pipeline generate_stats
+    deps:
+    - path: data/metrics/validation_processed.json
+      hash: md5
+      md5: 29a91cc8a25a23c8efc4ef5793eaa04a
+      size: 19016
+    - path: data/processed/movie_dna_labels.parquet
+      hash: md5
+      md5: ac419d82fd6f60128b46da2580dbfaf5
+      size: 2060806
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+    - path: data/processed/plot_embeddings_index.parquet
+      hash: md5
+      md5: aab2f99eb838a4abe623af59a8ffb2d6
+      size: 737123
+    - path: scripts/generate_stats.py
+      hash: md5
+      md5: 640b5f4bb3e4e9466d04cdf25b7e1a8d
+      size: 9208
+    outs:
+    - path: data/metrics/stats
+      hash: md5
+      md5: 5b97514ecd557516911ad5533e286eee.dir
+      size: 345301
+      nfiles: 12
+    - path: data/metrics/stats_current.json
+      hash: md5
+      md5: c9c768167ba994df39299691a4f22791
+      size: 29252
+  detect_anomalies:
+    cmd: python -m scripts.run_pipeline detect_anomalies
+    deps:
+    - path: data/metrics/stats_current.json
+      hash: md5
+      md5: c9c768167ba994df39299691a4f22791
+      size: 29252
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+    - path: scripts/alerts.py
+      hash: md5
+      md5: 016befd44f7169f7271203f3b965dea0
+      size: 5325
+    - path: scripts/anomalies.py
+      hash: md5
+      md5: 84466579b69d6ed2a71a4e39cd0ad35b
+      size: 13005
+    outs:
+    - path: data/metrics/anomalies
+      hash: md5
+      md5: a61c50580655126309e7fdfe2568d4e0.dir
+      size: 6414
+      nfiles: 8
+    - path: data/metrics/anomalies_current.json
+      hash: md5
+      md5: 256899a7f6c2a713296eae048f171155
+      size: 1100
+  bias_slicing:
+    cmd: python -m scripts.run_pipeline bias_slicing
+    deps:
+    - path: data/metrics/validation_processed.json
+      hash: md5
+      md5: 29a91cc8a25a23c8efc4ef5793eaa04a
+      size: 19016
+    - path: data/processed/movie_dna_labels.parquet
+      hash: md5
+      md5: ac419d82fd6f60128b46da2580dbfaf5
+      size: 2060806
+    - path: data/processed/movies_clean.parquet
+      hash: md5
+      md5: 2a2e7097ef7c8ba4f429349ca9067706
+      size: 5133423
+    - path: data/processed/plot_embeddings.npy
+      hash: md5
+      md5: 67727ce8bdcf92620cb8cdffbb5bfb06
+      size: 20991104
+    - path: data/processed/plot_embeddings_index.parquet
+      hash: md5
+      md5: aab2f99eb838a4abe623af59a8ffb2d6
+      size: 737123
+    - path: scripts/bias_slicing.py
+      hash: md5
+      md5: 7174b3a046854cd8eacca7ed09e7037e
+      size: 21360
+    outs:
+    - path: data/metrics/bias
+      hash: md5
+      md5: 8997a511afb88d8efc4c60a99c5c1e02.dir
+      size: 9311
+      nfiles: 1
+    - path: reports/bias_report.md
+      hash: md5
+      md5: 45bf20eca7883bfd02e5d2f6bc1acc11
+      size: 9183
