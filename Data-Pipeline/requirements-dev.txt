@@ -1,0 +1,7 @@
+# Local development / test dependencies (not needed inside the Airflow image).
+-r requirements.txt
+apache-airflow==2.10.5
+apache-airflow-providers-postgres
+pytest
+pytest-cov==6.0.0
+ruff

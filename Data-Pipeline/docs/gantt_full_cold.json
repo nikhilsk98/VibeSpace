@@ -1,0 +1,35 @@
+{
+  "run_id": "genome_full_1",
+  "states": {
+    "bias_slicing": "success",
+    "build_dna_labels": "success",
+    "build_tmdb_table": "success",
+    "clean": "success",
+    "detect_anomalies": "success",
+    "download_movielens": "success",
+    "dvc_version": "success",
+    "encode_plots": "success",
+    "fetch_tmdb": "success",
+    "generate_stats": "success",
+    "join_ids": "success",
+    "validate_processed": "success",
+    "validate_raw": "success"
+  },
+  "sum_task_seconds": 810.17,
+  "tasks": {
+    "bias_slicing": 3.02,
+    "build_dna_labels": 1.7,
+    "build_tmdb_table": 3.42,
+    "clean": 0.28,
+    "detect_anomalies": 0.4,
+    "download_movielens": 0.57,
+    "dvc_version": 43.37,
+    "encode_plots": 72.92,
+    "fetch_tmdb": 681.35,
+    "generate_stats": 0.26,
+    "join_ids": 0.23,
+    "validate_processed": 1.28,
+    "validate_raw": 1.37
+  },
+  "wall_seconds": 813.73
+}
