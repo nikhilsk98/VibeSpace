@@ -1,0 +1,5 @@
+# DVC remote (local folder, never committed)
+/dvc-storage/
+
+# OS / editor noise
+.DS_Store

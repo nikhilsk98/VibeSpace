@@ -1,0 +1,107 @@
+# Airflow 2.10.5 with LocalExecutor + Postgres for the VibeSpace data pipeline.
+#
+#   cd Data-Pipeline
+#   echo "AIRFLOW_UID=$(id -u)" >> .env      # once, on Linux/macOS
+#   docker compose up airflow-init
+#   docker compose up -d
+#   open http://localhost:8080   (user/password from _AIRFLOW_WWW_USER_*, default airflow/airflow)
+#
+# The whole repository is mounted at /opt/vibespace so DVC (repo root) and the
+# pipeline (Data-Pipeline/) are both visible inside the containers.
+
+x-airflow-common: &airflow-common
+  build: .
+  image: vibespace-airflow:2.10.5
+  env_file:
+    - path: .env
+      required: false
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/vibespace/Data-Pipeline/dags
+    AIRFLOW__CORE__PARALLELISM: "8"
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "8"
+    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/vibespace/Data-Pipeline/logs/airflow
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "30"
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+    PYTHONPATH: /opt/vibespace/Data-Pipeline
+    HF_HOME: /opt/vibespace/Data-Pipeline/.cache/huggingface
+    GX_ANALYTICS_ENABLED: "false"
+  volumes:
+    - ..:/opt/vibespace
+  working_dir: /opt/vibespace/Data-Pipeline
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on: &airflow-common-depends-on
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /opt/vibespace/Data-Pipeline/logs/airflow /opt/vibespace/Data-Pipeline/data
+        exec /entrypoint airflow version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+
+volumes:
+  postgres-db-volume:
