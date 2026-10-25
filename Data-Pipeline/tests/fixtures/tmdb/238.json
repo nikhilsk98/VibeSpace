@@ -1,0 +1,63 @@
+{
+ "id": 238,
+ "imdb_id": "tt0000238",
+ "adult": false,
+ "original_title": "The Godfather",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Drama"
+  },
+  {
+   "id": 2,
+   "name": "Crime"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster238.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser238",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer238",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "The Godfather",
+ "original_language": "en",
+ "release_date": "1972-03-14",
+ "runtime": 175,
+ "vote_count": 19000,
+ "popularity": 95.0,
+ "overview": "The ageing head of a crime family hands control of his empire to a reluctant son."
+}

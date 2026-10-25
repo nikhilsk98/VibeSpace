@@ -1,0 +1,67 @@
+{
+ "id": 8844,
+ "imdb_id": "tt0008844",
+ "adult": false,
+ "original_title": "Jumanji",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Adventure"
+  },
+  {
+   "id": 2,
+   "name": "Fantasy"
+  },
+  {
+   "id": 3,
+   "name": "Family"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster8844.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser8844",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer8844",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Jumanji",
+ "original_language": "en",
+ "release_date": "1995-12-15",
+ "runtime": 104,
+ "vote_count": 10500,
+ "popularity": 40.2,
+ "overview": "Two kids find a board game that releases jungle hazards with every roll of the dice."
+}

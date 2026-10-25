@@ -1,0 +1,63 @@
+{
+ "id": 19,
+ "imdb_id": "tt0000019",
+ "adult": false,
+ "original_title": "Metropolis",
+ "spoken_languages": [
+  {
+   "iso_639_1": "de"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Drama"
+  },
+  {
+   "id": 2,
+   "name": "Science Fiction"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster19.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser19",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer19",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Metropolis",
+ "original_language": "de",
+ "release_date": "1927-01-10",
+ "runtime": 153,
+ "vote_count": 2600,
+ "popularity": 14.0,
+ "overview": "In a futuristic city split between workers and planners, a robot double sows chaos."
+}

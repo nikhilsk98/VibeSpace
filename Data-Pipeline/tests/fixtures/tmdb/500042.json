@@ -1,0 +1,59 @@
+{
+ "id": 500042,
+ "imdb_id": "tt0500042",
+ "adult": false,
+ "original_title": "Fixture Film 42",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Action"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500042.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500042",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500042",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 42",
+ "original_language": "en",
+ "release_date": "1997-06-15",
+ "runtime": 104,
+ "vote_count": 1165,
+ "popularity": 34.5,
+ "overview": "Fixture plot number 42: a action story about people facing event 42."
+}

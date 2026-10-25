@@ -1,0 +1,59 @@
+{
+ "id": 500023,
+ "imdb_id": "tt0500023",
+ "adult": false,
+ "original_title": "Fixture Film 23",
+ "spoken_languages": [
+  {
+   "iso_639_1": "ja"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Thriller"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500023.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500023",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500023",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 23",
+ "original_language": "ja",
+ "release_date": "2007-06-15",
+ "runtime": 120,
+ "vote_count": 19575,
+ "popularity": 29.91,
+ "overview": "Fixture plot number 23: a thriller story about people facing event 23."
+}

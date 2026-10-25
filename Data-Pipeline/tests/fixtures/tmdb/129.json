@@ -1,0 +1,67 @@
+{
+ "id": 129,
+ "imdb_id": "tt0000129",
+ "adult": false,
+ "original_title": "Spirited Away",
+ "spoken_languages": [
+  {
+   "iso_639_1": "ja"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Animation"
+  },
+  {
+   "id": 2,
+   "name": "Family"
+  },
+  {
+   "id": 3,
+   "name": "Fantasy"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster129.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser129",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer129",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Spirited Away",
+ "original_language": "ja",
+ "release_date": "2001-07-20",
+ "runtime": 125,
+ "vote_count": 15000,
+ "popularity": 60.0,
+ "overview": "A girl wanders into a world of spirits and works in a bathhouse to free her parents."
+}

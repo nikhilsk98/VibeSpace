@@ -1,0 +1,59 @@
+{
+ "id": 500015,
+ "imdb_id": "tt0500015",
+ "adult": false,
+ "original_title": "Fixture Film 15",
+ "spoken_languages": [
+  {
+   "iso_639_1": "ja"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Horror"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500015.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500015",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500015",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 15",
+ "original_language": "ja",
+ "release_date": "1975-06-15",
+ "runtime": 123,
+ "vote_count": 16601,
+ "popularity": 8.57,
+ "overview": "Fixture plot number 15: a horror story about people facing event 15."
+}
