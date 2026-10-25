@@ -1,0 +1,59 @@
+{
+ "id": 500034,
+ "imdb_id": "tt0500034",
+ "adult": false,
+ "original_title": "Fixture Film 34",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Romance"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500034.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500034",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500034",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 34",
+ "original_language": "en",
+ "release_date": "2017-06-15",
+ "runtime": 124,
+ "vote_count": 11671,
+ "popularity": 19.44,
+ "overview": "Fixture plot number 34: a romance story about people facing event 34."
+}

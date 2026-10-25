@@ -1,0 +1,59 @@
+{
+ "id": 500011,
+ "imdb_id": "tt0500011",
+ "adult": false,
+ "original_title": "Fixture Film 11",
+ "spoken_languages": [
+  {
+   "iso_639_1": "fr"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Thriller"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500011.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500011",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500011",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 11",
+ "original_language": "fr",
+ "release_date": "1982-06-15",
+ "runtime": 137,
+ "vote_count": 12586,
+ "popularity": 26.19,
+ "overview": "Fixture plot number 11: a thriller story about people facing event 11."
+}

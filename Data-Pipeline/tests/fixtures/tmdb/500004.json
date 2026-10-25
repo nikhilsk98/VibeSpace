@@ -1,0 +1,59 @@
+{
+ "id": 500004,
+ "imdb_id": "tt0500004",
+ "adult": false,
+ "original_title": "Fixture Film 4",
+ "spoken_languages": [
+  {
+   "iso_639_1": "es"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Romance"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500004.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500004",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500004",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 4",
+ "original_language": "es",
+ "release_date": "2007-06-15",
+ "runtime": 101,
+ "vote_count": 6835,
+ "popularity": 13.49,
+ "overview": "Fixture plot number 4: a romance story about people facing event 4."
+}

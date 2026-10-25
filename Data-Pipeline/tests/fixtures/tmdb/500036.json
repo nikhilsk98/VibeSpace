@@ -1,0 +1,59 @@
+{
+ "id": 500036,
+ "imdb_id": "tt0500036",
+ "adult": false,
+ "original_title": "Fixture Film 36",
+ "spoken_languages": [
+  {
+   "iso_639_1": "es"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Action"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500036.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500036",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500036",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 36",
+ "original_language": "es",
+ "release_date": "1999-06-15",
+ "runtime": 82,
+ "vote_count": 19388,
+ "popularity": 23.92,
+ "overview": "Fixture plot number 36: a action story about people facing event 36."
+}

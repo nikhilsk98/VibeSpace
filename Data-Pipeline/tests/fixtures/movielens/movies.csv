@@ -1,0 +1,61 @@
+movieId,title,genres
+1,Toy Story (1995),Adventure|Animation|Children|Comedy|Fantasy
+2,Jumanji (1995),Adventure|Children|Fantasy
+3,Heat (1995),Action|Crime|Thriller
+4,Dilwale Dulhania Le Jayenge (1995),Comedy|Drama|Romance
+5,Baahubali: The Beginning (2015),Action|Adventure|Drama
+6,Amelie (2001),Comedy|Romance
+7,Metropolis (1927),Drama|Sci-Fi
+8,No Link Movie (1999),Drama
+9,Toy Story Duplicate Link (1995),Comedy
+10,Missing At TMDB (2003),Horror
+11,Silent Unknown (2005),Drama
+12,Adult Only (2004),Drama
+13,Very Long Epic (2000),Documentary|War
+14,Spirited Away (2001),Adventure|Animation|Fantasy
+15,The Godfather (1972),Crime|Drama
+16,Parasite (2019),Comedy|Drama|Thriller
+100,Fixture Film 0 (2016),Action
+101,Fixture Film 1 (2012),Comedy
+102,Fixture Film 2 (1969),Drama
+103,Fixture Film 3 (1950),Horror
+104,Fixture Film 4 (2007),Romance
+105,Fixture Film 5 (1969),Thriller
+106,Fixture Film 6 (1990),Action
+107,Fixture Film 7 (2019),Comedy
+108,Fixture Film 8 (1982),Drama
+109,Fixture Film 9 (1961),Horror
+110,Fixture Film 10 (1959),Romance
+111,Fixture Film 11 (1982),Thriller
+112,Fixture Film 12 (1968),Action
+113,Fixture Film 13 (1967),Comedy
+114,Fixture Film 14 (2011),Drama
+115,Fixture Film 15 (1975),Horror
+116,Fixture Film 16 (1987),Romance
+117,Fixture Film 17 (2011),Thriller
+118,Fixture Film 18 (1952),Action
+119,Fixture Film 19 (1956),Comedy
+120,Fixture Film 20 (1998),Drama
+121,Fixture Film 21 (1991),Horror
+122,Fixture Film 22 (1965),Romance
+123,Fixture Film 23 (2007),Thriller
+124,Fixture Film 24 (1980),Action
+125,Fixture Film 25 (1994),Comedy
+126,Fixture Film 26 (1975),Drama
+127,Fixture Film 27 (1978),Horror
+128,Fixture Film 28 (1950),Romance
+129,Fixture Film 29 (1971),Thriller
+130,Fixture Film 30 (2009),Action
+131,Fixture Film 31 (2016),Comedy
+132,Fixture Film 32 (1989),Drama
+133,Fixture Film 33 (2014),Horror
+134,Fixture Film 34 (2017),Romance
+135,Fixture Film 35 (1989),Thriller
+136,Fixture Film 36 (1999),Action
+137,Fixture Film 37 (2011),Comedy
+138,Fixture Film 38 (1981),Drama
+139,Fixture Film 39 (1951),Horror
+140,Fixture Film 40 (1979),Romance
+141,Fixture Film 41 (1996),Thriller
+142,Fixture Film 42 (1997),Action
+143,Fixture Film 43 (1991),Comedy

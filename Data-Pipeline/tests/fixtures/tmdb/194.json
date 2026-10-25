@@ -1,0 +1,63 @@
+{
+ "id": 194,
+ "imdb_id": "tt0000194",
+ "adult": false,
+ "original_title": "Amelie",
+ "spoken_languages": [
+  {
+   "iso_639_1": "fr"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Comedy"
+  },
+  {
+   "id": 2,
+   "name": "Romance"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster194.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser194",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer194",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Amelie",
+ "original_language": "fr",
+ "release_date": "2001-04-25",
+ "runtime": 122,
+ "vote_count": 11000,
+ "popularity": 28.0,
+ "overview": "A shy waitress in Paris decides to quietly change the lives of the people around her."
+}
