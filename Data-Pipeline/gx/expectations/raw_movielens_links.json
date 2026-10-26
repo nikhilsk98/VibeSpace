@@ -1,0 +1,38 @@
+{
+  "expectations": [
+    {
+      "kwargs": {
+        "min_value": 1
+      },
+      "type": "expect_table_row_count_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_be_unique"
+    },
+    {
+      "kwargs": {
+        "column": "tmdbId",
+        "mostly": 0.98
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "tmdbId",
+        "max_value": null,
+        "min_value": 1
+      },
+      "type": "expect_column_values_to_be_between"
+    }
+  ],
+  "name": "raw_movielens_links"
+}
