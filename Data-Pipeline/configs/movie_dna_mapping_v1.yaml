@@ -1,0 +1,57 @@
+# Movie DNA mapping: MovieLens Tag Genome tags -> 12 Movie DNA dimensions.
+#
+# Rules (enforced in scripts/build_dna_labels.py):
+#   * every tag must exist exactly (case-sensitive) in genome-tags.csv,
+#     unknown tags stop the pipeline with an error
+#   * 3-6 positive tags per dimension, inverse tags are optional
+#   * a tag must not appear in two dimensions unless it is listed under
+#     allowed_shared_tags with a reason
+#
+# Score per dimension = mean(relevance of positive tags + (1 - relevance of
+# inverse tags)), then converted to a percentile across movies (0-1).
+#
+# The Tag Genome is used ONLY to build these labels. It is never a model input.
+
+version: v1
+
+# No tag is shared between dimensions in v1.
+allowed_shared_tags: {}
+
+dimensions:
+  energy:
+    # Physical, kinetic on-screen action.
+    positive: [action packed, explosions, fight scenes, car chase, good action]
+    inverse: [meditative, reflective]
+  intensity:
+    # Harshness and force of what is shown.
+    positive: [intense, brutal, brutality, violent, visceral, gritty]
+    inverse: [light]
+  pace:
+    # How fast the story moves.
+    positive: [fast paced, exciting, chase]
+    inverse: [slow, slow paced, talky]
+  humor:
+    positive: [funny, hilarious, very funny, humorous, witty, comedy]
+  darkness:
+    # Tone and subject matter.
+    positive: [dark, bleak, grim, disturbing, macabre]
+    inverse: [cute, whimsical]
+  hopefulness:
+    positive: [feel-good, feel good movie, heartwarming, happy ending]
+    inverse: [depressing, downbeat]
+  emotional_intensity:
+    positive: [emotional, tear jerker, heartbreaking, moving, poignant, touching]
+  romance:
+    positive: [romance, romantic, love story, love, romantic comedy]
+  suspense:
+    positive: [suspense, suspenseful, tense, thriller, paranoia]
+    inverse: [predictable]
+  complexity:
+    positive: [complex, complicated plot, cerebral, thought-provoking, non-linear, mindfuck]
+    inverse: [simple, dumb]
+  realism:
+    positive: [realistic, based on a true story, true story, factual, biographical]
+    inverse: [fantasy, surreal, supernatural]
+  inspiration:
+    positive: [inspirational, inspiring, underdog, courage, redemption]
+    inverse: [cynical]
