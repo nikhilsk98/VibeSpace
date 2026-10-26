@@ -1,0 +1,130 @@
+{
+  "expectations": [
+    {
+      "kwargs": {
+        "min_value": 1
+      },
+      "type": "expect_table_row_count_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_be_unique"
+    },
+    {
+      "kwargs": {
+        "column": "tmdbId"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "tmdbId"
+      },
+      "type": "expect_column_values_to_be_unique"
+    },
+    {
+      "kwargs": {
+        "column": "title"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "runtime",
+        "max_value": 400,
+        "min_value": 1,
+        "mostly": 0.95
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "year",
+        "max_value": 2027,
+        "min_value": 1874
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "language",
+        "regex": "^(?:[a-z]{2}|unknown)$"
+      },
+      "type": "expect_column_values_to_match_regex"
+    },
+    {
+      "kwargs": {
+        "column": "language_group",
+        "value_set": [
+          "english",
+          "hindi",
+          "indian_regional",
+          "other_international",
+          "unknown"
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "era",
+        "value_set": [
+          "pre_1980",
+          "1980_1999",
+          "2000_plus",
+          "unknown"
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "popularity_bucket",
+        "value_set": [
+          "low",
+          "mid",
+          "high"
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "primary_genre",
+        "value_set": [
+          "action",
+          "adventure",
+          "animation",
+          "comedy",
+          "crime",
+          "documentary",
+          "drama",
+          "family",
+          "fantasy",
+          "film_noir",
+          "history",
+          "horror",
+          "music",
+          "mystery",
+          "romance",
+          "science_fiction",
+          "thriller",
+          "tv_movie",
+          "war",
+          "western",
+          "unknown"
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    }
+  ],
+  "name": "processed_catalog"
+}
