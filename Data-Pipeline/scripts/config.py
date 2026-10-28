@@ -177,6 +177,11 @@ class PipelineConfig:
         return self.data_dir / "cache"
 
     @property
+    def run_reports_dir(self) -> Path:
+        """Where this run writes its reports: sample runs use ``reports/sample/`` (git-ignored)."""
+        return self.reports_dir / "sample" if self.sample_size else self.reports_dir
+
+    @property
     def dna_mapping_path(self) -> Path:
         """Path to the Tag Genome to Movie DNA mapping."""
         return self.configs_dir / self.dna_mapping_file

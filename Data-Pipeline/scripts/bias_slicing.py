@@ -406,7 +406,7 @@ def run_bias_slicing(cfg: PipelineConfig) -> dict[str, Any]:
     result = run_bias_analysis(catalog, labels, embeddings, index, seed=cfg.random_seed)
     payload = metrics_payload(result)
     write_json(cfg.metrics_dir / "bias" / BIAS_METRICS_FILE, payload)
-    write_text(cfg.reports_dir / BIAS_REPORT_FILE, render_report(result))
+    write_text(cfg.run_reports_dir / BIAS_REPORT_FILE, render_report(result))
     logger.info("Bias analysis: overall MAE %s; significant slices %s", payload["overall_mae"],
                 payload["significant_slices"]["baseline"])
     return {"overall_mae": payload["overall_mae"], "significant_slices": payload["significant_slices"]}

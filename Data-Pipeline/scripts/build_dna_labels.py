@@ -202,7 +202,7 @@ def run_build_dna_labels(cfg: PipelineConfig) -> dict[str, Any]:
     write_parquet(cfg.processed_dir / DNA_LABELS_FILE, labels)
 
     movies = read_csv_checked(csv_dir / "movies.csv", ["movieId", "title", "genres"])
-    flagged = write_sanity_report(labels, movies, mapping, cfg.reports_dir / "dna_sanity_report.md")
+    flagged = write_sanity_report(labels, movies, mapping, cfg.run_reports_dir / "dna_sanity_report.md")
     summary = {
         "mapping_version": mapping.version,
         "movies_labelled": int(len(labels)),

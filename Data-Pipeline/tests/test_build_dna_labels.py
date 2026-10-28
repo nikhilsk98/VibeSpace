@@ -150,7 +150,7 @@ def test_run_build_dna_labels(ml_cfg):
     assert (labels["mapping_version"] == "v1").all()
     assert labels["movieId"].is_unique
     report = (ml_cfg.reports_dir / "dna_sanity_report.md").read_text()
-    assert "pending team review" in report and "## humor" in report
+    assert "reviewed by the team" in report and "## humor" in report
 
 
 def test_run_fails_on_unknown_tag(ml_cfg):

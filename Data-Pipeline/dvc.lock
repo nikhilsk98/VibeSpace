@@ -164,7 +164,7 @@ stages:
     deps:
     - path: configs/movie_dna_mapping_v1.yaml
       hash: md5
-      md5: c7d81b65ccc811e92611e4df5cf14879
+      md5: d90b0d1571c249e865634b9ffc2d45d0
       size: 2265
     - path: data/raw/movielens
       hash: md5
@@ -173,12 +173,12 @@ stages:
       nfiles: 9
     - path: scripts/build_dna_labels.py
       hash: md5
-      md5: 4986f9b2c32364928f83e1088f9ad8ff
-      size: 9320
+      md5: 53261c2773a60ebcfc9242fc738bed05
+      size: 9324
     - path: scripts/dna_sanity_report.py
       hash: md5
-      md5: 48945d29f26f8511cc2c3c88f931ea84
-      size: 5768
+      md5: 22caeedff3fc9626ea88c4f1c28705d5
+      size: 5754
     outs:
     - path: data/processed/dna_labels_summary.json
       hash: md5
@@ -190,8 +190,8 @@ stages:
       size: 2060806
     - path: reports/dna_sanity_report.md
       hash: md5
-      md5: 6de2e7c8cd8c68cc9303d7802841664f
-      size: 9779
+      md5: bf7595018d4a6db5195cf05b988864eb
+      size: 9780
   encode_plots:
     cmd: python -m scripts.run_pipeline encode_plots
     deps:

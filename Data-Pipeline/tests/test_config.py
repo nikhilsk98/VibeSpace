@@ -72,3 +72,9 @@ def test_derived_paths(tmp_path):
     assert cfg.movielens_csv_dir == tmp_path / "raw" / "movielens" / "ml-25m"
     assert cfg.tmdb_cache_dir == tmp_path / "raw" / "tmdb" / "movies"
     assert cfg.dna_mapping_path.name == "movie_dna_mapping_v1.yaml"
+
+
+def test_sample_runs_write_reports_to_sample_folder(tmp_path):
+    full = PipelineConfig(reports_dir=tmp_path)
+    assert full.run_reports_dir == tmp_path
+    assert PipelineConfig(reports_dir=tmp_path, sample_size=200).run_reports_dir == tmp_path / "sample"

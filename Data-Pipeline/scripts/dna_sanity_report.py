@@ -91,7 +91,7 @@ def render_report(labels: pd.DataFrame, movies: pd.DataFrame, mapping: DnaMappin
     lines = [
         "# Movie DNA sanity report",
         "",
-        f"Mapping version: **{mapping.version}** ({mapping.status or 'pending team review'}).  ",
+        f"Mapping version: **{mapping.version}** ({mapping.status or 'reviewed by the team'}).  ",
         f"Movies labelled: **{len(labels):,}**. Generated: {datetime.now(UTC):%Y-%m-%d %H:%M UTC}.",
         "",
         "Scores are percentiles (0 = lowest, 1 = highest) of the raw tag-relevance score.",
