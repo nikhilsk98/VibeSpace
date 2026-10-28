@@ -1,4 +1,5 @@
 # Movie DNA mapping: MovieLens Tag Genome tags -> 12 Movie DNA dimensions.
+# Status: v1, reviewed by the team.
 #
 # Rules (enforced in scripts/build_dna_labels.py):
 #   * every tag must exist exactly (case-sensitive) in genome-tags.csv,
@@ -13,6 +14,7 @@
 # The Tag Genome is used ONLY to build these labels. It is never a model input.
 
 version: v1
+status: reviewed by the team
 
 # No tag is shared between dimensions in v1.
 allowed_shared_tags: {}

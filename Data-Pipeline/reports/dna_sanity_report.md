@@ -1,7 +1,7 @@
 # Movie DNA sanity report
 
-Mapping version: **v1**   
-Movies labelled: **13,816**
+Mapping version: **v1** (reviewed by the team).  
+Movies labelled: **13,816**. Generated: 2026-10-28 00:12 UTC.
 
 Scores are percentiles (0 = lowest, 1 = highest) of the raw tag-relevance score.
 The Tag Genome is used only to build these labels; it is never a model input.

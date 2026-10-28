@@ -143,7 +143,7 @@ def write_csv(path: Path, header: list[str], rows: list[list]) -> None:
     """Write a small CSV file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
+        writer = csv.writer(fh, lineterminator="\n")
         writer.writerow(header)
         writer.writerows(rows)
 

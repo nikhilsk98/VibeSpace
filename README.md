@@ -777,6 +777,11 @@ VibeSpace should store trailer video IDs rather than downloading trailer files.
 
 # Data Pipeline
 
+> **Implemented:** the data pipeline for the course submission lives in [`Data-Pipeline/`](Data-Pipeline/).
+> It downloads MovieLens 25M and TMDB metadata and builds the clean catalog, the 12 Movie DNA labels and plot
+> embeddings, with Airflow orchestration, Great Expectations validation, anomaly alerts, bias analysis and DVC
+> versioning. Setup, usage and results: [`Data-Pipeline/README.md`](Data-Pipeline/README.md).
+
 Movie ingestion is orchestrated as a repeatable pipeline.
 
 ```text
