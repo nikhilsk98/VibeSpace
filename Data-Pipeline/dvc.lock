@@ -349,7 +349,7 @@ stages:
     outs:
     - path: data/metrics/bias
       hash: md5
-      md5: 08bee4ce4da4b7f184032c0e5ae6c2d5.dir
+      md5: 8997a511afb88d8efc4c60a99c5c1e02.dir
       size: 9311
       nfiles: 1
     - path: reports/bias_report.md
