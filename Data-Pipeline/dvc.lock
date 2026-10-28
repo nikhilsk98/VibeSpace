@@ -344,15 +344,15 @@ stages:
       size: 737123
     - path: scripts/bias_slicing.py
       hash: md5
-      md5: 7174b3a046854cd8eacca7ed09e7037e
-      size: 21360
+      md5: 5235a2ec5ddfa2400f0e94fbd7ab7158
+      size: 21364
     outs:
     - path: data/metrics/bias
       hash: md5
-      md5: 8997a511afb88d8efc4c60a99c5c1e02.dir
+      md5: 08bee4ce4da4b7f184032c0e5ae6c2d5.dir
       size: 9311
       nfiles: 1
     - path: reports/bias_report.md
       hash: md5
-      md5: 45bf20eca7883bfd02e5d2f6bc1acc11
+      md5: 0c3b76903cff344f2ed7fe965c937ae4
       size: 9183
