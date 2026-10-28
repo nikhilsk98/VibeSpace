@@ -1,0 +1,59 @@
+{
+ "id": 500027,
+ "imdb_id": "tt0500027",
+ "adult": false,
+ "original_title": "Fixture Film 27",
+ "spoken_languages": [
+  {
+   "iso_639_1": "fr"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Horror"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500027.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500027",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500027",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 27",
+ "original_language": "fr",
+ "release_date": "1978-06-15",
+ "runtime": 108,
+ "vote_count": 19356,
+ "popularity": 11.54,
+ "overview": "Fixture plot number 27: a horror story about people facing event 27."
+}

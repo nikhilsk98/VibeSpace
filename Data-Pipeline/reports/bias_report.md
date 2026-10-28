@@ -1,6 +1,6 @@
 # Bias report: data slicing, Fairlearn analysis and mitigation
 
-Generated 2026-10-23 18:49 UTC from 13,666 movies that have a clean catalog entry, Movie DNA labels and a plot embedding.
+Generated 2026-10-28 00:49 UTC from 13,666 movies that have a clean catalog entry, Movie DNA labels and a plot embedding.
 
 ## Why slices are movie attributes
 

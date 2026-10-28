@@ -1,0 +1,59 @@
+{
+ "id": 500003,
+ "imdb_id": "tt0500003",
+ "adult": false,
+ "original_title": "Fixture Film 3",
+ "spoken_languages": [
+  {
+   "iso_639_1": "fr"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Horror"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500003.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500003",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500003",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 3",
+ "original_language": "fr",
+ "release_date": "1950-06-15",
+ "runtime": 89,
+ "vote_count": 15942,
+ "popularity": 23.93,
+ "overview": "Fixture plot number 3: a horror story about people facing event 3."
+}

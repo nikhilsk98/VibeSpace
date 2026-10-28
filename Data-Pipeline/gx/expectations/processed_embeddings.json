@@ -1,0 +1,58 @@
+{
+  "expectations": [
+    {
+      "kwargs": {
+        "min_value": 1
+      },
+      "type": "expect_table_row_count_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_be_unique"
+    },
+    {
+      "kwargs": {
+        "column": "dim",
+        "value_set": [
+          384
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "is_finite",
+        "value_set": [
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "norm",
+        "max_value": 1.01,
+        "min_value": 0.99
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "in_catalog",
+        "value_set": [
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    }
+  ],
+  "name": "processed_embeddings"
+}

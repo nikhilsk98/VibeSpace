@@ -1,0 +1,59 @@
+{
+ "id": 500010,
+ "imdb_id": "tt0500010",
+ "adult": false,
+ "original_title": "Fixture Film 10",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Romance"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500010.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500010",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500010",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 10",
+ "original_language": "en",
+ "release_date": "1959-06-15",
+ "runtime": 116,
+ "vote_count": 19405,
+ "popularity": 45.94,
+ "overview": "Fixture plot number 10: a romance story about people facing event 10."
+}

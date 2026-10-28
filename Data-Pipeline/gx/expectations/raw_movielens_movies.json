@@ -1,0 +1,47 @@
+{
+  "expectations": [
+    {
+      "kwargs": {
+        "min_value": 1
+      },
+      "type": "expect_table_row_count_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "title"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "genres"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "movieId"
+      },
+      "type": "expect_column_values_to_be_unique"
+    },
+    {
+      "kwargs": {
+        "column": "title"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    }
+  ],
+  "name": "raw_movielens_movies"
+}

@@ -6,6 +6,9 @@
 /logs/*
 !/logs/.gitkeep
 
+# Reports from sample runs (--sample-size); full-run reports in reports/ are committed
+/reports/sample/
+
 # Secrets and local environments
 .env
 .env.*

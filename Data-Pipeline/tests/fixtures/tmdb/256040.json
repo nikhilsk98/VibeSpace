@@ -1,0 +1,67 @@
+{
+ "id": 256040,
+ "imdb_id": "tt0256040",
+ "adult": false,
+ "original_title": "Baahubali: The Beginning",
+ "spoken_languages": [
+  {
+   "iso_639_1": "te"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Action"
+  },
+  {
+   "id": 2,
+   "name": "Drama"
+  },
+  {
+   "id": 3,
+   "name": "Fantasy"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster256040.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser256040",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer256040",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Baahubali: The Beginning",
+ "original_language": "te",
+ "release_date": "2015-07-10",
+ "runtime": 159,
+ "vote_count": 900,
+ "popularity": 15.3,
+ "overview": "A young man raised by villagers learns of his royal lineage and an ancient feud."
+}

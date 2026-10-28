@@ -1,0 +1,59 @@
+{
+ "id": 12121,
+ "imdb_id": "tt0012121",
+ "adult": true,
+ "original_title": "Adult Only",
+ "spoken_languages": [
+  {
+   "iso_639_1": "en"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Drama"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster12121.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser12121",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer12121",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Adult Only",
+ "original_language": "en",
+ "release_date": "2004-01-01",
+ "runtime": 90,
+ "vote_count": 10,
+ "popularity": 1.0,
+ "overview": "A fixture record that must be quarantined because it is flagged adult."
+}

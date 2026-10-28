@@ -1,0 +1,59 @@
+{
+ "id": 500021,
+ "imdb_id": "tt0500021",
+ "adult": false,
+ "original_title": "Fixture Film 21",
+ "spoken_languages": [
+  {
+   "iso_639_1": "hi"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Horror"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500021.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500021",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500021",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 21",
+ "original_language": "hi",
+ "release_date": "1991-06-15",
+ "runtime": 126,
+ "vote_count": 7755,
+ "popularity": 16.83,
+ "overview": "Fixture plot number 21: a horror story about people facing event 21."
+}

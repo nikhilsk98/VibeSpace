@@ -1,0 +1,67 @@
+{
+ "id": 496243,
+ "imdb_id": "tt0496243",
+ "adult": false,
+ "original_title": "Parasite",
+ "spoken_languages": [
+  {
+   "iso_639_1": "ko"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Comedy"
+  },
+  {
+   "id": 2,
+   "name": "Thriller"
+  },
+  {
+   "id": 3,
+   "name": "Drama"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster496243.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser496243",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer496243",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Parasite",
+ "original_language": "ko",
+ "release_date": "2019-05-30",
+ "runtime": 133,
+ "vote_count": 16000,
+ "popularity": 70.0,
+ "overview": "A poor family schemes its way into the household of a wealthy one."
+}

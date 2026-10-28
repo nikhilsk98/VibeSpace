@@ -1,0 +1,59 @@
+{
+ "id": 500007,
+ "imdb_id": "tt0500007",
+ "adult": false,
+ "original_title": "Fixture Film 7",
+ "spoken_languages": [
+  {
+   "iso_639_1": "ja"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US"
+  }
+ ],
+ "genres": [
+  {
+   "id": 1,
+   "name": "Comedy"
+  }
+ ],
+ "vote_average": 7.1,
+ "poster_path": "/poster500007.jpg",
+ "keywords": {
+  "keywords": [
+   {
+    "id": 1,
+    "name": "fixture"
+   }
+  ]
+ },
+ "videos": {
+  "results": [
+   {
+    "site": "YouTube",
+    "type": "Teaser",
+    "key": "teaser500007",
+    "official": true,
+    "published_at": "2020-01-01T00:00:00Z",
+    "size": 1080
+   },
+   {
+    "site": "YouTube",
+    "type": "Trailer",
+    "key": "trailer500007",
+    "official": true,
+    "published_at": "2019-01-01T00:00:00Z",
+    "size": 1080
+   }
+  ]
+ },
+ "title": "Fixture Film 7",
+ "original_language": "ja",
+ "release_date": "2019-06-15",
+ "runtime": 129,
+ "vote_count": 12445,
+ "popularity": 49.46,
+ "overview": "Fixture plot number 7: a comedy story about people facing event 7."
+}
