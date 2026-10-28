@@ -922,6 +922,3 @@ from real runs.
   (section 12).
 * **Next:** train the Movie DNA model on these outputs, with re-sampling of small genre slices as decided
   in the bias report.
-
-Data: MovieLens 25M (GroupLens Research) and TMDB (this product uses the TMDB API but is not endorsed or
-certified by TMDB).
