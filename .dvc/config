@@ -1,5 +1,7 @@
 [core]
     analytics = false
-    remote = localstore
+    remote = gcs
 ['remote "localstore"']
     url = ../dvc-storage
+['remote "gcs"']
+    url = gs://vibespace-dvc-nsk/dvc
