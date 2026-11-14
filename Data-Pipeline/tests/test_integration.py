@@ -42,6 +42,10 @@ def offline(monkeypatch):
             return FakeResponse(200, content=zip_bytes)
         return routes["tmdb"](url, **kwargs)
 
+    # Import GX before ``requests.Session`` is patched: with ``dvc[gs]`` installed, GX imports google-auth,
+    # which subclasses ``requests.Session`` at import time.
+    import great_expectations  # noqa: F401
+
     # acquire_movielens and acquire_tmdb share the ``requests`` module, so one patch serves both.
     monkeypatch.setattr(acquire_movielens.requests, "Session", lambda: FakeSession(handler))
     monkeypatch.setattr(encode_plots, "load_encoder", lambda name: FakeEncoder())

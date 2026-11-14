@@ -85,7 +85,7 @@ flowchart LR
         M2[detect_anomalies<br/>+ Slack / email / log alerts]
         M3[bias_slicing<br/>Fairlearn + mitigation]
     end
-    DVC[(dvc_version<br/>dvc commit + push<br/>local remote dvc-storage/)]
+    DVC[(dvc_version<br/>dvc commit + push<br/>GCS remote gs://vibespace-dvc-nsk)]
 
     ML --> A1
     A1 --> A2
@@ -165,7 +165,8 @@ VibeSpace/                          # repository root (DVC is initialised here: 
 | Git | to clone the repository |
 | Docker Desktop | give it **8 GB of memory** (Settings → Resources), needed only for Airflow |
 | DVC | installed by `requirements.txt` (`dvc==3.59.1`), so no separate install is needed |
-| Disk | about 6 GB free for data, the DVC cache and the remote |
+| Disk | about 6 GB free for data and the DVC cache |
+| Google Cloud CLI | optional, only to `dvc pull` from the team bucket (section 12) |
 | TMDB API key | free; see below |
 
 **Getting a TMDB key:**
@@ -619,45 +620,39 @@ git add dvc.lock && git commit -m "Version data"    # record a data version in G
 git checkout <commit> && dvc pull                    # restore the data of an older version
 ```
 
-### The remote is a local folder for now
+### The remote is a private GCS bucket
 
-`.dvc/config` sets the default remote `localstore` to `../dvc-storage`, which is `VibeSpace/dvc-storage/`.
-This folder lives on the machine that ran the pipeline and is git-ignored. **A fresh clone therefore cannot
-`dvc pull`**: `dvc status` shows every output as missing, which is expected. A grader reproduces the data by
-running the pipeline (section 17), which downloads everything again from MovieLens and TMDB. No access to
-our remote is needed.
+`.dvc/config` sets the default remote `gcs` to `gs://vibespace-dvc-nsk/dvc`, a **private** Google Cloud
+Storage bucket (project `vibespace-mlops`, region `us-east1`, uniform bucket-level access, public access
+prevention enforced). It holds every data version the pipeline has pushed so far. Nobody can read it without
+being granted access, and no credentials are stored in the repository.
 
-### Switching to a shared remote later
+The old local remote `localstore` (`../dvc-storage`) is still listed as a non-default entry. It is only a
+backup on the machine that first ran the pipeline; `dvc pull` and `dvc push` never use it unless you pass
+`-r localstore`.
 
-**Google Cloud Storage:**
+**Access for a teammate (one-time setup):**
 
-```bash
-.venv/bin/pip install dvc-gs --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt
-gcloud auth application-default login               # or a service-account key, see below
-dvc remote add -d gcs gs://<bucket>/vibespace-dvc
-# optional, for a service account:
-dvc remote modify --local gcs credentialpath /path/to/service-account.json
-dvc push                                            # upload the current data
-git add ../.dvc/config && git commit -m "Use GCS DVC remote"
-```
-
-**Google Drive:**
+1. The bucket owner grants your Google account `roles/storage.objectUser` on the bucket only:
+   `gcloud storage buckets add-iam-policy-binding gs://vibespace-dvc-nsk --member=user:EMAIL --role=roles/storage.objectUser`
+2. Install the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) and log in for client
+   libraries (DVC uses these credentials):
 
 ```bash
-.venv/bin/pip install dvc-gdrive --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt
-dvc remote add -d gdrive gdrive://<folder-id>       # the id at the end of the Drive folder URL
-# Drive needs your own OAuth client (Google Cloud Console → APIs & Services → Credentials):
-dvc remote modify --local gdrive gdrive_client_id <client-id>
-dvc remote modify --local gdrive gdrive_client_secret <client-secret>
-# or a service account that has access to the folder:
-#   dvc remote modify gdrive gdrive_use_service_account true
-#   dvc remote modify --local gdrive gdrive_service_account_json_file_path /path/to/key.json
-dvc push
-git add ../.dvc/config && git commit -m "Use Google Drive DVC remote"
+gcloud auth application-default login     # pick the Google account that was granted access
+.venv/bin/pip install "dvc[gs]==3.59.1" \
+    --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt
+                                          # adds the GCS plugin to the venv from section 5
+dvc pull                                  # downloads all outputs for the current dvc.lock
 ```
 
-`--local` keeps the credentials in `.dvc/config.local`, which is not committed. Add the same package to the
-Docker image (`requirements.txt`) if the Airflow `dvc_version` task should push to the new remote.
+**Without access** (for example a grader): `dvc pull` fails with a permission error, which is expected.
+Reproduce all data by running the pipeline instead (section 17), which downloads everything again from
+MovieLens and TMDB. No access to our remote is needed.
+
+**Airflow in Docker:** the image does not include the GCS plugin or any Google credentials, so the
+`dvc_version` task cannot push to the bucket from inside the containers. Set `DVC_PUSH=false` in `.env` for
+Airflow runs; the task still runs `dvc commit` and `dvc status`. Then run `dvc push` on the host.
 
 ---
 
@@ -834,7 +829,8 @@ On a new machine:
    `.venv/bin/python -m scripts.run_pipeline all --skip dvc_version`.
 
 Running the pipeline **downloads all data again from the original sources** (MovieLens and TMDB). A grader
-does not need access to our DVC remote.
+does not need access to our DVC remote. Team members with access to the private bucket can skip steps 4–5
+and run `dvc pull` instead (section 12).
 
 **What is fixed:**
 - All randomness uses `RANDOM_SEED=42`.
@@ -902,8 +898,9 @@ from real runs.
 | Permission errors on `data/` or `logs/` | set `AIRFLOW_UID=$(id -u)` in `.env` and recreate the containers |
 | Webserver not reachable | `docker compose ps`; wait for `healthy`; `docker compose logs airflow-webserver` |
 | `pip` resolution errors | install with the Airflow constraints file exactly as in section 5, using Python 3.11 |
-| `dvc pull` fails on a fresh clone | expected: the remote is a local folder (section 12); run the pipeline instead |
-| `dvc push` fails | make sure `VibeSpace/dvc-storage` is writable; `dvc remote list` should show `localstore` |
+| `dvc pull` fails with `403` / permission denied | the bucket is private: ask for `roles/storage.objectUser` on `gs://vibespace-dvc-nsk` and rerun `gcloud auth application-default login` with that account; without access, run the pipeline instead (section 17) |
+| `dvc pull` says the `gs` scheme is unsupported | install the plugin with the constraints file, as in section 12 (without it, pip upgrades shared packages such as `protobuf` and Great Expectations breaks) |
+| `dvc push` fails | check `dvc remote list` shows `gcs` as `gs://vibespace-dvc-nsk/dvc` and that your account has `roles/storage.objectUser`; in Docker set `DVC_PUSH=false` and push from the host (section 12) |
 | Match rate below 90% | check the reasons in `data/interim/join_quarantine.parquet` and the failures in `data/interim/fetch_tmdb_summary.json` |
 | Reports in `reports/` changed after a test run | only full runs write there; sample runs write to `reports/sample/`. Undo with `git restore Data-Pipeline/reports/` |
 
@@ -918,7 +915,8 @@ from real runs.
   (`movie_dna_mapping_v2.yaml`) and recorded in `mapping_version`.
 * **TMDB stage `rest` not yet run:** the ≈48,600 movies without Tag Genome data are not in the catalog yet.
   Running that stage is the main step to improve representation of small slices.
-* **Local DVC remote:** data is only on the machine that ran the pipeline. The next step is a GCS bucket
-  (section 12).
+* **DVC remote access:** data is in a private GCS bucket that team members reach with their own Google
+  accounts (section 12). The Airflow containers cannot push to it yet; the next step is CI and container
+  access through a dedicated service account.
 * **Next:** train the Movie DNA model on these outputs, with re-sampling of small genre slices as decided
   in the bias report.
