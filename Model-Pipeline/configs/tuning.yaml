@@ -1,0 +1,56 @@
+# Part 2: Optuna hyperparameter search (TPE sampler, seed = random_seed of model_config.yaml).
+# Objective: mean validation MAE on the saved Part 1 split. The test split is never used here.
+
+sampler: tpe
+tpe_n_startup_trials: 10
+pruner:
+  type: median
+  n_startup_trials: 5
+  n_warmup_steps: 10           # epochs before an MLP trial can be pruned
+total_time_cap_minutes: 90     # stop at the cap and keep the best trial so far
+# per-model caps inside the total cap, so one model cannot use up the whole budget
+model_time_cap_minutes: {ridge: 5, lightgbm: 55, mlp: 30}
+model_order: [ridge, lightgbm, mlp]
+storage_file: optuna/optuna.db # under artifacts_dir (git-ignored), lets an interrupted run resume
+
+models:
+  ridge:
+    n_trials: 25
+    search_space:
+      alpha: {type: float, low: 0.01, high: 1000.0, log: true}
+
+  lightgbm:
+    n_trials: 50
+    fixed:
+      n_estimators: 2000        # upper bound; early stopping on validation picks the number of trees
+      early_stopping_rounds: 50
+      subsample_freq: 1
+      n_jobs: 8
+    search_space:
+      num_leaves: {type: int, low: 8, high: 128, log: true}
+      learning_rate: {type: float, low: 0.01, high: 0.2, log: true}
+      max_depth: {type: categorical, choices: [-1, 4, 6, 8, 12]}
+      min_child_samples: {type: int, low: 5, high: 100, log: true}
+      subsample: {type: float, low: 0.5, high: 1.0}
+      colsample_bytree: {type: float, low: 0.1, high: 1.0}
+      reg_alpha: {type: float, low: 0.00000001, high: 10.0, log: true}
+      reg_lambda: {type: float, low: 0.00000001, high: 10.0, log: true}
+
+  mlp:
+    n_trials: 40
+    fixed:
+      max_epochs: 200
+      patience: 15
+      num_threads: 4
+    search_space:
+      hidden_sizes: {type: categorical, choices: ["128", "256", "256-128", "512-256", "512-256-128"]}
+      dropout: {type: float, low: 0.0, high: 0.5}
+      learning_rate: {type: float, low: 0.0001, high: 0.01, log: true}
+      weight_decay: {type: float, low: 0.0000001, high: 0.01, log: true}
+      batch_size: {type: categorical, choices: [64, 128, 256]}
+      huber_delta: {type: categorical, choices: [0.05, 0.1, 0.5]}
+
+sensitivity:
+  top_k: 3                     # hyperparameters swept one at a time for the final candidate
+  points: 7                    # values per numeric sweep (log-spaced when the space is log)
+  importance_evaluator: fanova
