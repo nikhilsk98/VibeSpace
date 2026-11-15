@@ -1,0 +1,45 @@
+# Local Docker setup for the Model-Pipeline.
+#   docker compose build
+#   docker compose run --rm trainer train --config configs/model_config.yaml
+#   docker compose up -d mlflow        # MLflow UI of the container runs: http://localhost:5000
+#   MLFLOW_PORT=5001 docker compose up -d mlflow   # if port 5000 is taken (macOS AirPlay Receiver uses it)
+#   docker compose down
+# The container reads the DVC-versioned data read-only and writes everything to ./docker-out/,
+# so it never touches the host's reports/, artifacts/ or mlflow/ folders.
+
+x-outputs: &outputs
+  VIBESPACE_MODEL_REPORTS_DIR: /app/Model-Pipeline/docker-out/reports
+  VIBESPACE_MODEL_ARTIFACTS_DIR: /app/Model-Pipeline/docker-out/artifacts
+  VIBESPACE_MODEL_MLFLOW_DIR: /app/Model-Pipeline/docker-out/mlflow
+
+services:
+  trainer:
+    build: .
+    image: vibespace-model:local
+    environment:
+      <<: *outputs
+      GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    volumes:
+      - ../Data-Pipeline/data:/app/Data-Pipeline/data:ro
+      - ../Data-Pipeline/dvc.lock:/app/Data-Pipeline/dvc.lock:ro
+      - ./reports:/app/Model-Pipeline/reports:ro    # host results, e.g. reports/part2/best_params.json
+      - ./docker-out:/app/Model-Pipeline/docker-out
+    command: ["train", "--config", "configs/model_config.yaml"]
+
+  mlflow:
+    image: vibespace-model:local
+    entrypoint: ["mlflow"]
+    command:
+      - server
+      - --backend-store-uri
+      - sqlite:////app/Model-Pipeline/docker-out/mlflow/mlflow.db
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --allowed-hosts
+      - "localhost:*,127.0.0.1:*"
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - ./docker-out:/app/Model-Pipeline/docker-out

@@ -1,0 +1,15 @@
+.venv
+artifacts
+mlflow
+reports
+docker-out
+docs
+tests
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+.coverage*
+htmlcov
+*.egg-info
+build
