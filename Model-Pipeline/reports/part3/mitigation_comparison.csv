@@ -1,0 +1,4 @@
+model,kind,val_mae,val_r2,worst_slice_ratio,worst_slice,max_worst_over_best,validation_gate,bias_gate
+mlp_tuned,tuned,0.15414414465559143,0.5133810278404174,1.103743132328535,primary_genre=romance,1.4001901775529024,pass,pass
+mlp_reweighted,reweighted,0.16051994068054334,0.4781057906871053,1.0841279907011716,primary_genre=drama,1.3962568583209232,pass,pass
+mlp_resampled,resampled,0.15505874371665518,0.5084229577374344,1.1001661846791893,primary_genre=romance,1.4294740717246326,pass,pass
