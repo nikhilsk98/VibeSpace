@@ -820,6 +820,18 @@ Potential orchestration:
 
 ---
 
+# Model Pipeline
+
+> **Implemented:** the Movie DNA model (Model 1) for the course submission lives in
+> [`Model-Pipeline/`](Model-Pipeline/). It loads the DVC-versioned data pipeline outputs, trains and tunes
+> four candidate models (mean baseline, Ridge, LightGBM, PyTorch MLP) with MLflow tracking and Optuna,
+> explains them with SHAP and permutation importance, checks bias across movie slices with Fairlearn,
+> pushes the selected model to a model registry on Google Cloud with champion protection and rollback, and
+> runs the train → validate → bias → promote sequence in GitHub Actions. Setup, usage and results:
+> [`Model-Pipeline/README.md`](Model-Pipeline/README.md).
+
+---
+
 # Training Pipeline
 
 ## Movie DNA training

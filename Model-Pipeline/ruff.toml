@@ -1,0 +1,19 @@
+line-length = 110
+target-version = "py311"
+extend-exclude = [".venv", "mlflow", "artifacts", "docker-out"]
+
+[lint]
+# PEP 8 style, pyflakes, imports, bugbear, naming, simplifications, security
+select = ["E", "W", "F", "I", "B", "N", "UP", "SIM", "S", "C4"]
+ignore = [
+    "N803",  # argument names such as X / X_train follow the scikit-learn convention
+    "N806",  # variable names such as X / Y follow the scikit-learn convention
+    "S301",  # pickle / joblib loading of our own saved preprocessing objects
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S311", "S108"]
+
+[lint.isort]
+known-first-party = ["vibespace_model", "tests"]
+known-third-party = ["mlflow"]  # the git-ignored mlflow/ store folder is not a local package
