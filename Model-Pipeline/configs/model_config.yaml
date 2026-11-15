@@ -1,0 +1,133 @@
+# VibeSpace Model 1 (Movie DNA predictor): main configuration.
+# Relative paths are resolved against the Model-Pipeline folder (the parent of configs/).
+# Environment overrides: see README section "Configuration".
+
+random_seed: 42
+experiment_name: vibespace-movie-dna
+registered_model_name: vibespace-movie-dna
+
+paths:
+  data_pipeline_dir: ../Data-Pipeline          # holds dvc.lock
+  processed_dir: ../Data-Pipeline/data/processed
+  reports_dir: reports
+  artifacts_dir: artifacts
+  mlflow_dir: mlflow
+
+data:
+  catalog_file: movies_clean.parquet
+  labels_file: movie_dna_labels.parquet
+  embeddings_file: plot_embeddings.npy
+  embedding_index_file: plot_embeddings_index.parquet
+  embedding_dim: 384
+  # pipeline outputs checked against Data-Pipeline/dvc.lock before every run
+  hash_checked_files:
+    - movies_clean.parquet
+    - movie_dna_labels.parquet
+    - plot_embeddings.npy
+    - plot_embeddings_index.parquet
+
+targets:
+  - energy
+  - intensity
+  - pace
+  - humor
+  - darkness
+  - hopefulness
+  - emotional_intensity
+  - romance
+  - suspense
+  - complexity
+  - realism
+  - inspiration
+
+features:
+  genres_column: genres
+  runtime_column: runtime
+  year_column: year
+  language_column: language_group
+  popularity_columns: [popularity, vote_count]   # log1p, then standardised
+  extra_numeric_columns: [vote_average]          # standardised (part of the popularity group)
+  flag_columns:
+    - flag_short_overview
+    - flag_missing_overview
+    - flag_missing_runtime
+    - flag_runtime_outlier
+    - flag_year_mismatch
+    - flag_unknown_language
+
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  stratify_on: language_group
+  min_stratum_size: 20          # smaller strata are merged into one "_small" stratum
+
+slices: [language_group, era, primary_genre, popularity_bucket]
+
+models:
+  baseline: {}
+  ridge:
+    alpha: 10.0
+  lightgbm:
+    n_estimators: 600
+    learning_rate: 0.05
+    num_leaves: 31
+    max_depth: -1
+    min_child_samples: 20
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.5
+    reg_alpha: 0.0
+    reg_lambda: 1.0
+    early_stopping_rounds: 50
+    n_jobs: 8
+  mlp:
+    hidden_sizes: [256, 128]
+    dropout: 0.2
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    batch_size: 128
+    max_epochs: 200
+    patience: 15
+    huber_delta: 0.1
+    num_threads: 4
+
+explain:
+  sample_size: 1000          # test movies explained with SHAP (all if fewer)
+  background_size: 200       # training rows used as the SHAP background
+  gradient_nsamples: 100     # expected-gradient samples per movie (MLP)
+  permutation_repeats: 5     # shuffles per feature group (validation set)
+
+gate:
+  min_mae_improvement: 0.15   # mean validation MAE at least 15% below the mean baseline
+  min_r2: 0.30                # mean validation R² across the 12 dimensions
+
+# Part 4: model registry on GCP (Artifact Registry generic repo + metadata bucket), see infra/README.md
+registry:
+  project: vibespace-mlops
+  location: us-east1
+  repository: vibespace-models
+  package: movie-dna
+  champion_package: movie-dna-champions   # protected store: every champion is copied here, never cleaned up
+  bucket: vibespace-model-registry-nsk
+  images_repository: vibespace-images
+  promotion_tolerance: 0.002          # candidate may be at most this much worse (val MAE) than the champion
+  dry_run_dir: artifacts/registry-dry-run
+
+# Part 5: CI training (no Optuna): the final model family with the tuned Part 2 parameters
+# (reports/part2/best_params.json), trained on the fixed Part 1 split, then gated and promoted.
+ci:
+  family: mlp
+  params:
+    hidden_sizes: [512, 256]
+    dropout: 0.19892896697479936
+    learning_rate: 0.0006168783042294797
+    weight_decay: 2.918737247916876e-06
+    batch_size: 128
+    max_epochs: 200
+    patience: 15
+    huber_delta: 0.05
+    num_threads: 4
+  # the split is deterministic (seed 42, same data); CI recreates it and checks this hash
+  expected_split_hash: 30100836287cbcfcd63c5b10a6569d6cd2cfe2a2c9705b70a91fc48f3211526a
+  local_alias: ci-candidate
