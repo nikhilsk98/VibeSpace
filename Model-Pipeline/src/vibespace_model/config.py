@@ -86,6 +86,9 @@ class ModelConfig:
     tuning: dict[str, Any] = field(default_factory=dict)
     bias: dict[str, Any] = field(default_factory=dict)
     sample_size: int | None = None
+    # fast runs (--tuned-params on the full data) write their reports to reports/fast/, so the committed
+    # full-run reports in reports/part1-3 are never overwritten; --write-reports turns this off
+    fast_reports: bool = False
 
     def model_params(self, name: str) -> dict[str, Any]:
         """Copy of the default parameters of one candidate model."""
@@ -93,10 +96,22 @@ class ModelConfig:
             raise ConfigError(f"no parameters for model '{name}' in the config")
         return copy.deepcopy(self.models[name])
 
+    @property
+    def reports_base(self) -> Path:
+        """Root of this run's reports.
+
+        ``reports/`` for full runs, ``reports/sample/`` for sample runs and ``reports/fast/`` for fast runs
+        (``--tuned-params`` without ``--write-reports``); the last two are git-ignored.
+        """
+        if self.sample_size:
+            return self.paths.reports_dir / "sample"
+        if self.fast_reports:
+            return self.paths.reports_dir / "fast"
+        return self.paths.reports_dir
+
     def reports_subdir(self, part: str) -> Path:
-        """Report folder of one part; sample runs write to ``reports/sample/`` instead."""
-        base = self.paths.reports_dir / "sample" if self.sample_size else self.paths.reports_dir
-        path = base / part
+        """Report folder of one part (under :attr:`reports_base`)."""
+        path = self.reports_base / part
         path.mkdir(parents=True, exist_ok=True)
         return path
 

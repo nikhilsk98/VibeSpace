@@ -11,8 +11,9 @@
 !/mlflow/.gitkeep
 /docker-out/
 
-# Reports from sample runs (--sample-size); full-run reports are committed
+# Reports from sample runs (--sample-size) and fast runs (--tuned-params); full-run reports are committed
 /reports/sample/
+/reports/fast/
 
 # Python / tooling
 __pycache__/
