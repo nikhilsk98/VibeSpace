@@ -195,7 +195,6 @@ def model_config(root: Path) -> dict[str, Any]:
                 "flag_runtime_outlier",
                 "flag_year_mismatch",
                 "flag_unknown_language",
-                "flag_not_in_catalog",
             ],
         },
         "split": {

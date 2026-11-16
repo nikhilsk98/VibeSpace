@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from vibespace_model.config import DNA_DIMENSIONS
-from vibespace_model.errors import LeakageError
+from vibespace_model.errors import DataValidationError, LeakageError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +132,14 @@ class FeatureBuilder:
         flags = [c for c in cfg.get("flag_columns", []) if c in catalog.columns]
         missing_flags = sorted(set(cfg.get("flag_columns", [])) - set(flags))
         if missing_flags:
-            LOGGER.warning("Flag columns not in the catalog (left out): %s", missing_flags)
+            if not cfg.get("allow_missing_columns", False):
+                raise DataValidationError(
+                    f"flag columns missing from the catalog: {missing_flags} "
+                    "(set features.allow_missing_columns: true to leave them out on purpose)"
+                )
+            LOGGER.warning(
+                "Flag columns not in the catalog (left out, allow_missing_columns): %s", missing_flags
+            )
 
         self.state = {
             "genres": genres,

@@ -52,6 +52,30 @@
         ]
       },
       "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "row_in_order",
+        "value_set": [
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "encoder"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "encoder",
+        "value_set": [
+          "sentence-transformers/all-MiniLM-L6-v2"
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
     }
   ],
   "name": "processed_embeddings"
