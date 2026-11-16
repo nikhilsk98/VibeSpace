@@ -18,7 +18,7 @@ import pandas as pd
 
 from scripts.build_dna_labels import DNA_DIMENSIONS, DNA_LABELS_FILE
 from scripts.build_tmdb_table import TMDB_TABLE_FILE
-from scripts.clean import CLEAN_FILE
+from scripts.clean import CANONICAL_GENRES, CLEAN_FILE
 from scripts.config import PipelineConfig
 from scripts.encode_plots import EMBEDDINGS_FILE, EMBEDDINGS_INDEX_FILE
 from scripts.exceptions import ValidationFailedError
@@ -116,18 +116,49 @@ def raise_on_failure(report: dict[str, Any], stage: str) -> None:
     raise ValidationFailedError(f"{stage} validation failed: " + "; ".join(problems))
 
 
+LIST_COLUMNS = ("genres", "tmdb_genres", "keywords", "production_countries", "spoken_languages")
+
+
+def _genre_list(value: Any) -> list[str]:
+    """Genres of one catalog row as a list (lists / arrays as stored; missing -> empty)."""
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return []
+    if isinstance(value, str):
+        return [g for g in value.split("|") if g]
+    return [str(g) for g in value]
+
+
+def catalog_frame(catalog: pd.DataFrame) -> pd.DataFrame:
+    """The clean catalog as GX checks it: list columns replaced by facts GX can validate.
+
+    ``genre_count`` (number of genres) and ``genres_known`` (every genre in the canonical vocabulary)
+    stand in for the list-valued ``genres`` column the model uses as a feature.
+    """
+    frame = catalog.drop(columns=[c for c in LIST_COLUMNS if c in catalog.columns])
+    if "genres" in catalog.columns:
+        vocab = set(CANONICAL_GENRES)
+        genres = catalog["genres"].map(_genre_list)
+        frame["genre_count"] = genres.map(len).astype("int64")
+        frame["genres_known"] = genres.map(lambda gs: all(g in vocab for g in gs))
+    return frame
+
+
 def embedding_frame(embeddings: np.ndarray, index: pd.DataFrame, catalog_ids: set[int]) -> pd.DataFrame:
-    """Per-row embedding facts that GX can check (dim, finiteness, norm, catalog link)."""
+    """Per-row embedding facts that GX can check (dim, finiteness, norm, catalog link, row order, encoder)."""
     n = len(index)
     if embeddings.shape[0] != n:
         raise ValidationFailedError(f"Embeddings have {embeddings.shape[0]} rows but the index has {n}")
     dim = embeddings.shape[1] if embeddings.ndim == 2 else 0
+    rows = index["row"].to_numpy() if "row" in index.columns else np.full(n, -1)
     return pd.DataFrame({
         "movieId": index["movieId"].astype("int64").to_numpy(),
         "dim": np.full(n, dim, dtype=np.int64),
         "is_finite": np.isfinite(embeddings).all(axis=1) if n else np.array([], dtype=bool),
         "norm": np.linalg.norm(embeddings, axis=1) if n else np.array([], dtype=float),
         "in_catalog": index["movieId"].isin(catalog_ids).to_numpy(),
+        # matrix row i must be index row i (contiguous 0..n-1), the order the model relies on
+        "row_in_order": rows == np.arange(n),
+        "encoder": index["encoder"].astype(str).to_numpy() if "encoder" in index.columns else [None] * n,
     })
 
 
@@ -151,8 +182,7 @@ def run_validate_raw(cfg: PipelineConfig) -> dict[str, Any]:
 
 def run_validate_processed(cfg: PipelineConfig) -> dict[str, Any]:
     """Validate the clean catalog, DNA labels, embeddings and the join match rate."""
-    catalog = read_parquet(cfg.processed_dir / CLEAN_FILE).drop(
-        columns=["genres", "tmdb_genres", "keywords", "production_countries", "spoken_languages"])
+    catalog = catalog_frame(read_parquet(cfg.processed_dir / CLEAN_FILE))
     labels = read_parquet(cfg.processed_dir / DNA_LABELS_FILE, columns=["movieId", "mapping_version",
                                                                          *DNA_DIMENSIONS])
     embeddings = np.load(cfg.processed_dir / EMBEDDINGS_FILE)

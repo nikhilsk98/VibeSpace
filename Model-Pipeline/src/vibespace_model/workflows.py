@@ -69,6 +69,11 @@ LOGGER = logging.getLogger(__name__)
 def read_summary(cfg: ModelConfig, part: str) -> dict[str, Any]:
     """Summary JSON written by an earlier part (clear error if that part has not run)."""
     path = cfg.reports_subdir(part) / f"{part}_summary.json"
+    committed = cfg.paths.reports_dir / part / f"{part}_summary.json"
+    if not path.is_file() and cfg.fast_reports and committed.is_file():
+        # a fast run of one command (e.g. `tune --tuned-params`) builds on the committed earlier part
+        LOGGER.info("Fast run: reading %s from the committed reports (read-only)", committed)
+        path = committed
     if not path.is_file():
         command = {"part1": "train", "part2": "tune", "part3": "bias"}.get(part, part)
         raise VibeSpaceModelError(f"{path} not found; run the `{command}` command first")

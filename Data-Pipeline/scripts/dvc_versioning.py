@@ -42,7 +42,16 @@ def run_dvc(args: list[str], cwd: Path, timeout: int = 3600, runner: Any = subpr
 
 
 def version_outputs(cfg: PipelineConfig, push: bool | None = None, runner: Any = subprocess.run) -> dict[str, Any]:
-    """Commit current outputs to the DVC cache, push them and return a summary."""
+    """Commit current outputs to the DVC cache, push them and return a summary.
+
+    Sample runs are never versioned: their outputs live in ``data/sample/`` (not DVC outputs), and
+    committing would record whatever full outputs happen to be on disk, so this step does nothing.
+    """
+    if cfg.is_sample:
+        reason = (f"sample run (sample_size={cfg.sample_size}): outputs are in {cfg.output_dir} "
+                  "and are never versioned; skipping dvc commit and dvc push")
+        logger.warning("DVC versioning skipped: %s", reason)
+        return {"committed": False, "pushed": False, "skipped": True, "reason": reason}
     cwd = cfg.root
     if not (cwd / "dvc.yaml").is_file():
         raise DVCError(f"No dvc.yaml found in {cwd}")

@@ -54,6 +54,9 @@ features:
     - flag_runtime_outlier
     - flag_year_mismatch
     - flag_unknown_language
+  # A configured feature column missing from the catalog stops the run (data error, exit code 3).
+  # Set to true only to deliberately train without such a column (it is then left out with a warning).
+  allow_missing_columns: false
 
 split:
   train: 0.70

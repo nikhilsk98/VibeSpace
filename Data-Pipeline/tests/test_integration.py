@@ -100,3 +100,41 @@ def test_pipeline_stops_on_bad_tmdb_key(offline, capsys, tmp_path):
     assert code == 1
     assert "TMDBAuthError" in capsys.readouterr().err
     assert "401" in (tmp_path / "logs" / "pipeline.log").read_text()
+
+
+def _tree_hashes(root):
+    """``{relative path: md5}`` of every file under ``root``."""
+    return {p.relative_to(root).as_posix(): hashlib.md5(p.read_bytes()).hexdigest()  # noqa: S324
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def test_sample_run_never_touches_full_outputs(offline, tmp_path, capsys, monkeypatch):
+    """A sample run (including dvc_version) writes only to data/sample/ and is never versioned."""
+    assert run_pipeline.main(["all", "--skip", "dvc_version", "--run-id", "full"]) == 0
+    capsys.readouterr()
+    data = tmp_path / "data"
+    before = {d: _tree_hashes(data / d) for d in ("interim", "processed", "metrics")}
+    full_reports = _tree_hashes(tmp_path / "reports")
+
+    calls: list[list[str]] = []
+    from scripts import dvc_versioning
+
+    monkeypatch.setattr(dvc_versioning, "run_dvc", lambda args, *a, **k: calls.append(args) or "")
+    code = run_pipeline.main(["all", "--sample-size", "50", "--run-id", "sample"])
+    out = capsys.readouterr()
+    assert code == 0, out.err
+    results = parse_results(out.out)
+
+    # full outputs and committed-style reports are byte-identical
+    assert {d: _tree_hashes(data / d) for d in ("interim", "processed", "metrics")} == before
+    assert {k: v for k, v in _tree_hashes(tmp_path / "reports").items() if not k.startswith("sample/")} \
+        == full_reports
+    # the sample has its own tree with the normal layout
+    sample_catalog = pd.read_parquet(data / "sample" / "processed" / "movies_clean.parquet")
+    assert 0 < len(sample_catalog) <= 50
+    assert (data / "sample" / "processed" / "plot_embeddings.npy").is_file()
+    assert (data / "sample" / "metrics" / "validation_processed.json").is_file()
+    assert (tmp_path / "reports" / "sample" / "bias_report.md").is_file()
+    # dvc_version ran but did nothing
+    assert results["dvc_version"]["skipped"] is True and not results["dvc_version"]["committed"]
+    assert calls == []

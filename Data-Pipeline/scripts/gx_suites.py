@@ -15,6 +15,16 @@ from scripts.build_dna_labels import DNA_DIMENSIONS
 from scripts.clean import CANONICAL_GENRES, ERAS, LANGUAGE_GROUPS, MIN_VALID_YEAR, POPULARITY_BUCKETS
 from scripts.config import PipelineConfig
 
+# Flag columns the model pipeline uses as features (Model-Pipeline/configs/model_config.yaml, features.flag_columns).
+MODEL_FLAG_COLUMNS = (
+    "flag_short_overview",
+    "flag_missing_overview",
+    "flag_missing_runtime",
+    "flag_runtime_outlier",
+    "flag_year_mismatch",
+    "flag_unknown_language",
+)
+
 
 @dataclass(frozen=True)
 class ExpectationSpec:
@@ -109,6 +119,14 @@ def processed_suites(cfg: PipelineConfig) -> dict[str, list[ExpectationSpec]]:
             _in_set("era", list(ERAS)),
             _in_set("popularity_bucket", list(POPULARITY_BUCKETS)),
             _in_set("primary_genre", [*CANONICAL_GENRES, "unknown"]),
+            # inputs of the model pipeline's features (genres, popularity group, flags)
+            _between("genre_count", 1, None),
+            _in_set("genres_known", [True]),
+            _not_null("popularity"), _between("popularity", 0, 10_000),
+            _not_null("vote_count"), _between("vote_count", 0, 10_000_000),
+            _not_null("vote_average"), _between("vote_average", 0, 10),
+            *[spec for flag in MODEL_FLAG_COLUMNS
+              for spec in (_exists(flag), _not_null(flag), _in_set(flag, [False, True]))],
         ],
         "processed_dna_labels": dna,
         "processed_embeddings": [
@@ -117,5 +135,7 @@ def processed_suites(cfg: PipelineConfig) -> dict[str, list[ExpectationSpec]]:
             _in_set("is_finite", [True]),
             _between("norm", 0.99, 1.01),
             _in_set("in_catalog", [True]),
+            _in_set("row_in_order", [True]),
+            _not_null("encoder"), _in_set("encoder", [cfg.encoder_model]),
         ],
     }

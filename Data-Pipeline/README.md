@@ -52,7 +52,8 @@ anywhere. The only pretrained model is the small local text encoder.
 Results of the full TMDB `genome` stage (the run the committed reports come from):
 - 13,816 Tag Genome movies, of which 13,666 joined to TMDB (match rate 98.9%) and passed cleaning.
 - 13,816 DNA label rows and 13,666 × 384 plot embeddings.
-- 8 Great Expectations suites with 74 expectations, all passing.
+- 8 Great Expectations suites with 103 expectations (including the checks of every column the model
+  pipeline reads), all passing on these outputs.
 - 0 critical and 0 warning anomalies.
 
 ---
@@ -109,7 +110,8 @@ VibeSpace/                          # repository root (DVC is initialised here: 
 └── Data-Pipeline/
     ├── dags/
     │   └── data_pipeline_dag.py    # the two Airflow DAGs (optimised + sequential baseline)
-    ├── data/                       # all data, git-ignored and tracked by DVC (raw/, interim/, processed/, metrics/, cache/)
+    ├── data/                       # all data, git-ignored and tracked by DVC (raw/, interim/, processed/, metrics/, cache/);
+    │                               #   sample runs write to data/sample/ (git- and DVC-ignored, never versioned)
     ├── scripts/                    # one module per step (pure functions) + a thin task layer
     │   ├── config.py               # settings from env / .env, validated; secrets never logged
     │   ├── acquire_movielens.py    # download, MD5, safe unzip, header checks, manifest
@@ -427,11 +429,15 @@ All 12 dimensions pass, with 0 flagged.
 | `raw_genome_tags` | validate_raw | 5 | at least 1 row; `tagId` and `tag` not null and unique |
 | `raw_tmdb_movies` | validate_raw | 8 | at least 1 row; `tmdb_id` not null and unique; runtime 0–1000 (99%); vote count ≥ 0; vote average 0–10; language `^[a-z]{2}$` (99%); release date `YYYY-MM-DD` (95%) |
 | `join_quality` | validate_processed | 1 | match rate between `MIN_MATCH_RATE` and 1 |
-| `processed_catalog` | validate_processed | 13 | at least 1 row; `movieId` / `tmdbId` not null and unique; `title` not null; runtime 1–400 (95%); year 1874 to next year; language format; `language_group`, `era`, `popularity_bucket` and `primary_genre` in their allowed sets |
+| `processed_catalog` | validate_processed | 39 | at least 1 row; `movieId` / `tmdbId` not null and unique; `title` not null; runtime 1–400 (95%); year 1874 to next year; language format; `language_group`, `era`, `popularity_bucket` and `primary_genre` in their allowed sets; **model inputs:** every movie has ≥ 1 genre and all genres are in the canonical vocabulary (`genre_count`, `genres_known`); `popularity` 0–10,000, `vote_count` 0–10,000,000 and `vote_average` 0–10, all not null; the 6 `flag_*` columns the model uses exist, are not null and are boolean |
 | `processed_dna_labels` | validate_processed | 28 | at least 1 row; `movieId` not null and unique; `mapping_version` set; each of the 12 dimensions not null and in [0, 1] |
-| `processed_embeddings` | validate_processed | 7 | at least 1 row; `movieId` not null and unique; dim = 384; all values finite; norm 0.99–1.01; every embedding linked to a catalog movie |
+| `processed_embeddings` | validate_processed | 10 | at least 1 row; `movieId` not null and unique; dim = 384; all values finite; norm 0.99–1.01; every embedding linked to a catalog movie; index `row` is 0..n−1 in matrix order (`row_in_order`); `encoder` recorded and equal to the configured encoder |
 
-The full genome run passed all **8 suites and 74 expectations**.
+The full genome outputs pass all **8 suites and 103 expectations**. `genres` is a list column, so the
+catalog suite checks two derived columns instead (`genre_count`, `genres_known`, built in
+`validate.catalog_frame`); the embedding suite checks the per-row facts built in `validate.embedding_frame`.
+The flag columns are the ones in `gx_suites.MODEL_FLAG_COLUMNS`, which mirror
+`Model-Pipeline/configs/model_config.yaml` (`features.flag_columns`).
 
 ### Per-run statistics and drift (`scripts/generate_stats.py`)
 
@@ -524,7 +530,7 @@ flowchart LR
 | Param | Default (optimised) | Meaning |
 |---|---|---|
 | `tmdb_stage` | `genome` (or `TMDB_STAGE`) | `genome`, `rest` or `all` |
-| `sample_size` | empty | run on N movies for a quick end-to-end check |
+| `sample_size` | empty | run on N movies for a quick end-to-end check; outputs go to `data/sample/` and are never versioned (section 11) |
 | `use_cache` | `true` | reuse cached TMDB responses and embeddings |
 | `tmdb_max_workers` | `8` | TMDB thread-pool size |
 | `tmdb_rate_limit` | `40` | TMDB requests per second |
@@ -581,8 +587,18 @@ docker compose exec airflow-scheduler airflow dags trigger vibespace_data_pipeli
 The `--sample-size N` option:
 - picks a reproducible random sample of N movies (seed 42);
 - keeps its statistics under a separate profile, for example `genome_n200`;
+- writes its interim, processed and metrics outputs to `data/sample/` (same layout as `data/`: `interim/`,
+  `processed/`, `metrics/`), which is git- and DVC-ignored. The versioned outputs in `data/interim/`,
+  `data/processed/` and `data/metrics/` are never touched. Raw inputs (`data/raw/`) and caches
+  (`data/cache/`) are shared, so a sample of cached movies makes no TMDB requests;
 - writes its reports to `reports/sample/`, which is git-ignored. The committed full-run reports in
-  `reports/` are never overwritten.
+  `reports/` are never overwritten;
+- is never versioned: `dvc_version` logs "DVC versioning skipped" and runs neither `dvc commit` nor
+  `dvc push`, also inside Airflow (`airflow dags test … -c '{"sample_size": 200}'`) and with `DVC_PUSH=true`.
+
+To train the model on a sample, point it at the sample outputs (the hash check does not apply to them):
+`VIBESPACE_MODEL_PROCESSED_DIR=../Data-Pipeline/data/sample/processed .venv/bin/python -m vibespace_model.cli
+run-all --skip-hash-check --sample-size 200` from `Model-Pipeline/`.
 
 `--sample-size 0` means all movies. The CLI prints one JSON summary per step and exits non-zero on failure.
 
@@ -608,7 +624,22 @@ Caches and history folders use `persist: true`. The two reports are outputs with
 keeps them and DVC records their hashes.
 
 **In Airflow:** the last task, `dvc_version`, runs `dvc commit --force` (records hashes in `dvc.lock`), then
-`dvc push`, then `dvc status`.
+`dvc push`, then `dvc status`. For sample runs it does nothing (section 11), so only full runs are ever
+versioned.
+
+**`dvc status` after a rerun:** stages can be listed as changed even when the data is identical, because some
+outputs (the step summaries in `data/interim/` and `data/processed/`, the validation, statistics, anomaly and
+bias files in `data/metrics/`, and the two reports) contain timestamps, run IDs or durations. The four
+model inputs (`movies_clean.parquet`, `movie_dna_labels.parquet`, `plot_embeddings.npy`,
+`plot_embeddings_index.parquet`) are byte-identical on a cached rerun; only those are hash-checked by the
+model pipeline.
+
+**Re-encoding embeddings from scratch:** encoding the plots again without the embedding cache
+(`data/cache/embeddings/`) gives the same vectors up to float noise (max absolute difference ≈ 3e-7, cosine
+similarity ≥ 0.9999998), but not the same bytes, so `plot_embeddings.npy` gets a new MD5 and the model
+pipeline's hash check correctly refuses it. The supported paths are the DVC-versioned embedding cache
+(`dvc pull`, then a normal run reuses every vector), or a deliberate re-encode followed by `dvc commit`
+(and `dvc push`) so `dvc.lock` records the new file.
 
 ```bash
 dvc status        # do the workspace files match dvc.lock?
@@ -683,21 +714,21 @@ Airflow runs; the task still runs `dvc commit` and `dvc status`. Then run `dvc p
 | `test_build_dna_labels.py` | 18 | real mapping loads and its tags exist, unknown / wrong-case tags fail, tag-count and overlap rules, inverse-tag math, missing scores, percentiles with ties, streamed loading, full step |
 | `test_dna_sanity_report.py` | 3 | genre lift, flags for weak / flat / correlated dimensions, top / bottom lists |
 | `test_encode_plots.py` | 9 | missing overviews skipped, shapes and unit norms, wrong dimension, cache reuse / invalidation, no-cache runs keep the cache, bad cache ignored, empty catalog |
-| `test_validate.py` | 12 | each GX suite passes on good data and catches bad data (out-of-range DNA, wrong embedding dim, empty table, low match rate), suite export |
+| `test_validate.py` | 27 | each GX suite passes on good data and catches bad data (out-of-range DNA, wrong embedding dim, empty table, low match rate), suite export; model inputs: empty or unknown genres, null / negative / out-of-range popularity and votes, missing or null flag columns, embedding rows out of order, duplicate `movieId`, wrong or missing encoder |
 | `test_generate_stats.py` | 6 | column statistics, PSI properties, run comparison (schema / null / row changes), profiles, history |
 | `test_anomalies.py` | 11 | missing values, outliers, invalid formats, schema violations, failed suites, drift, join quality, alert on warnings, blocking anomaly fails the task |
 | `test_alerts.py` | 9 | log fallback, Slack and email delivery, broken channels never raise, Airflow failure callback |
-| `test_bias_slicing.py` | 11 | representation, inverse-frequency weights, re-sampling, 70/15/15 split, Tag Genome excluded from features, a built-in slice gap is detected, small samples, sample runs leave committed reports alone |
-| `test_dvc_versioning.py` | 5 | commit / push / status, push disabled, DVC errors, missing `dvc.yaml`, DVC not installed |
-| `test_config.py` | 17 | env parsing, overrides, invalid values, secrets masked, bearer detection, derived paths, sample report folder |
+| `test_bias_slicing.py` | 11 | representation, inverse-frequency weights, re-sampling, 70/15/15 split, Tag Genome excluded from features, a built-in slice gap is detected, small samples, sample runs leave committed reports and full metrics alone |
+| `test_dvc_versioning.py` | 7 | commit / push / status, push disabled, DVC errors, missing `dvc.yaml`, DVC not installed, sample runs are never committed or pushed, full runs still commit |
+| `test_config.py` | 18 | env parsing, overrides, invalid values, secrets masked, bearer detection, derived paths, sample report folder, sample data tree (`data/sample/`) with shared raw inputs and caches |
 | `test_io_utils.py` | 6 | atomic JSON / parquet / numpy / text writes, hashes, CSV helpers |
 | `test_tasks.py` | 9 | params → config, DAG tasks ↔ pipeline steps, CLI argument handling and failures, step logging |
 | `test_gantt.py` | 4 | Airflow REST API parsing, errors, chart drawing, CLI |
 | `test_dag.py` | 7 | DAGs import without errors, no cycles, expected edges, baseline is a chain, retries / callbacks / docs on every task, permanent errors skip retries |
-| `test_integration.py` | 2 | whole pipeline on fixtures twice (second run resumes from caches and compares stats); bad TMDB key stops the run |
+| `test_integration.py` | 3 | whole pipeline on fixtures twice (second run resumes from caches and compares stats); bad TMDB key stops the run; a sample run including `dvc_version` after a full run leaves every full output and report byte-identical and writes only to `data/sample/` |
 
 **Current results:**
-- **225 passed**: 216 unit, 2 integration and 7 DAG tests.
+- **244 passed**: 234 unit, 3 integration and 7 DAG tests.
 - **97% line coverage** on `scripts/` + `dags/`.
 - `ruff check .` reports **All checks passed**.
 
@@ -822,7 +853,7 @@ On a new machine:
 
 1. Install the prerequisites (section 4) and get a TMDB key.
 2. Clone the repository and complete the setup (section 5): `.env`, venv, constrained install.
-3. `.venv/bin/python -m pytest` should give 225 passed. The tests are fully offline.
+3. `.venv/bin/python -m pytest` should give 244 passed. The tests are fully offline.
 4. Run a quick check: `.venv/bin/python -m scripts.run_pipeline all --sample-size 200 --skip dvc_version`.
 5. Run the full pipeline, either in Airflow (`docker compose build && docker compose up airflow-init &&
    docker compose up -d`, then trigger `vibespace_data_pipeline`) or with
@@ -841,7 +872,10 @@ and run `dvc pull` instead (section 12).
 - `dvc.lock` records the hash of every output of our last full run.
 
 **What can differ:** TMDB metadata changes over time, so catalog counts and the drift statistics of a new
-run may differ slightly from the committed reports.
+run may differ slightly from the committed reports. Re-encoding the plots without the embedding cache gives
+float differences up to ≈ 3e-7, so the rebuilt `plot_embeddings.npy` has a new hash that the model pipeline's
+hash check (correctly) blocks; use the DVC-versioned cache, or re-encode on purpose and `dvc commit` the
+result (section 12). With the pulled data and caches, a rerun reproduces the four model inputs byte for byte.
 
 ---
 
@@ -855,11 +889,11 @@ from real runs.
 | **Key components** | | |
 | 1. Data acquisition | `scripts/acquire_movielens.py`, `scripts/acquire_tmdb.py`, `scripts/build_tmdb_table.py`, `requirements.txt` (section 6) | `test_acquire_movielens.py`, `test_acquire_tmdb.py`, `test_build_tmdb_table.py` |
 | 2. Data preprocessing | `scripts/join_ids.py`, `scripts/clean.py`, `scripts/build_dna_labels.py`, `scripts/encode_plots.py` (section 7) | `test_join_ids.py`, `test_clean.py`, `test_build_dna_labels.py`, `test_encode_plots.py` |
-| 3. Test modules | `tests/` (section 13) | 225 passed, 97% coverage |
+| 3. Test modules | `tests/` (section 13) | 244 passed, 97% coverage |
 | 4. Airflow DAGs | `dags/data_pipeline_dag.py`, `scripts/tasks.py`, `docker-compose.yaml` (section 10) | `test_dag.py`; full genome runs, all 13 tasks `success` |
 | 5. DVC | `dvc.yaml`, `dvc.lock`, `.dvc/config`, `scripts/dvc_versioning.py` (section 12) | `test_dvc_versioning.py` |
 | 6. Tracking and logging | `scripts/logging_utils.py`, `scripts/alerts.py`, Airflow task logs (section 14) | `test_tasks.py`, `test_alerts.py` |
-| 7. Schema and statistics | `scripts/gx_suites.py`, `scripts/validate.py`, `gx/expectations/`, `scripts/generate_stats.py` (section 8) | `test_validate.py`, `test_generate_stats.py`; 8 suites / 74 expectations passed |
+| 7. Schema and statistics | `scripts/gx_suites.py`, `scripts/validate.py`, `gx/expectations/`, `scripts/generate_stats.py` (section 8) | `test_validate.py`, `test_generate_stats.py`; 8 suites / 103 expectations passed |
 | 8. Anomaly detection and alerts | `scripts/anomalies.py`, `scripts/alerts.py` (section 9) | `test_anomalies.py`, `test_alerts.py` |
 | 9. Pipeline flow optimization | baseline vs optimised DAG, `docs/optimization.md`, `scripts/gantt.py` (section 15) | `test_gantt.py`; 117.8 s → 67.7 s |
 | **Data bias detection** | | |
@@ -869,7 +903,7 @@ from real runs.
 | 4. Documentation | `reports/bias_report.md`, section 16 | trade-offs and decision documented |
 | **Evaluation criteria** | | |
 | 1. Proper documentation | this README, docstrings in every module, folder structure (section 3) | — |
-| 2. Modular code | one pure-function module per step, thin task layer | 225 tests, `ruff` clean |
+| 2. Modular code | one pure-function module per step, thin task layer | 244 tests, `ruff` clean |
 | 3. Pipeline orchestration | section 10 | `test_dag.py` |
 | 4. Tracking and logging | sections 9 and 14 | `test_tasks.py`, `test_alerts.py` |
 | 5. Data version control | section 12 | `dvc.lock`, `test_dvc_versioning.py` |
@@ -877,7 +911,7 @@ from real runs.
 | 7. Schema and statistics generation | section 8 | `test_validate.py`, `test_generate_stats.py` |
 | 8. Anomaly detection and alerts | section 9 | `test_anomalies.py` |
 | 9. Bias detection and mitigation | section 16 | `reports/bias_report.md` |
-| 10. Test modules | section 13 | 225 passed |
+| 10. Test modules | section 13 | 244 passed |
 | 11. Reproducibility | section 17 | fresh-clone install + tests + sample run |
 | 12. Error handling and logging | section 14 | `test_acquire_*.py`, `test_integration.py::test_pipeline_stops_on_bad_tmdb_key` |
 | **Additional guidelines** | | |
@@ -903,6 +937,7 @@ from real runs.
 | `dvc push` fails | check `dvc remote list` shows `gcs` as `gs://vibespace-dvc-nsk/dvc` and that your account has `roles/storage.objectUser`; in Docker set `DVC_PUSH=false` and push from the host (section 12) |
 | Match rate below 90% | check the reasons in `data/interim/join_quarantine.parquet` and the failures in `data/interim/fetch_tmdb_summary.json` |
 | Reports in `reports/` changed after a test run | only full runs write there; sample runs write to `reports/sample/`. Undo with `git restore Data-Pipeline/reports/` |
+| Where are the outputs of my sample run? | in `data/sample/processed/` (plus `data/sample/interim/`, `data/sample/metrics/`); `data/processed/` and `dvc.lock` are not changed by sample runs |
 
 ---
 

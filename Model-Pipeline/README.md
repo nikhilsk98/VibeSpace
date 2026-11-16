@@ -92,7 +92,7 @@ cd ../Model-Pipeline
 python3.11 -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/pip install -e . --no-deps       # makes `vibespace_model` importable (CLI and tests)
-.venv/bin/python -m pytest                 # 195 offline tests, no data needed
+.venv/bin/python -m pytest                 # 204 offline tests, no data needed
 ```
 
 Never install `dvc[gs]` without the constraints file: pip would upgrade shared packages and break Great
@@ -131,7 +131,8 @@ Model-Pipeline/
 ├── ci/notify.py            # Part 5: notification / Slack message builder, "not promoted" annotation
 ├── infra/                  # Part 4: gcp_setup.sh (idempotent GCP setup) + README (resources, roles, cost)
 ├── tests/                  # unit + integration tests; fixtures/build_fixtures.py writes synthetic data
-├── reports/                # full-run reports: part1/, part2/, part3/ (sample runs: reports/sample/, ignored)
+├── reports/                # full-run reports: part1/, part2/, part3/ (sample runs: reports/sample/,
+│                           #   fast --tuned-params runs: reports/fast/; both git-ignored)
 ├── docs/                   # requirements_checklist, tuning, sensitivity, explainability, bias, ci_setup_for_later
 ├── artifacts/              # saved models, split, Optuna studies (git-ignored)
 ├── mlflow/                 # local MLflow SQLite store + artifacts (git-ignored)
@@ -172,9 +173,15 @@ All commands run from `Model-Pipeline/`:
 
 Options: `--sample-size N` (random subset; outputs go to `reports/sample/` and `artifacts/sample/`),
 `--skip-hash-check` (fixture data only), `--tuned-params reports/part2/best_params.json` (reuse tuned
-parameters instead of searching; sensitivity is then skipped), `--dry-run` (registry and CI commands: a local
-folder `artifacts/registry-dry-run/` instead of GCP), `--bundle`, `--version`, `--to-version`, `--dest`,
-`--local-alias`, `--tuning-config`, `--bias-config`, `--log-level`.
+parameters instead of searching; sensitivity is then skipped), `--write-reports` (see below), `--dry-run`
+(registry and CI commands: a local folder `artifacts/registry-dry-run/` instead of GCP), `--bundle`,
+`--version`, `--to-version`, `--dest`, `--local-alias`, `--tuning-config`, `--bias-config`, `--log-level`.
+
+**Fast runs never overwrite the committed reports.** `reports/part1–3/` hold the full run (Optuna search +
+sensitivity). A run with `--tuned-params` writes its reports to `reports/fast/part1–3/` instead (git-ignored),
+and a single fast command such as `tune --tuned-params …` reads the earlier part's summary from the committed
+reports without changing it. Add `--write-reports` to deliberately update `reports/part1–3/` from a fast run;
+it cannot be combined with `--sample-size` (sample runs always write to `reports/sample/`).
 
 **Exit codes:** `0` ok (for `promote` / `ci-run` this includes "not promoted"), `1` validation gate failed,
 `2` bias gate failed (final model flagged), `3` data, configuration or registry error (e.g. hash mismatch).
@@ -237,7 +244,12 @@ MLFLOW_PORT=5001 docker compose up -d mlflow    # if port 5000 is taken (macOS A
    outputs are hashed the way DVC does (MD5 of the sorted JSON listing, `.dir` suffix; verified against all 7
    directory outputs of the real `dvc.lock`). A mismatch or a missing file stops the run (exit code 3).
 2. **Validation:** 12 labels present, numeric, without gaps and in [0, 1]; no duplicate movieIds; embedding
-   width 384; index `row` is 0..n-1 in order and matches the matrix length; finite embeddings.
+   width 384; index `row` is 0..n-1 in order and matches the matrix length; finite embeddings; every catalog
+   column the features and slices use is present, **including the 6 flag columns**: a missing one stops the
+   run with a clear error (exit code 3) instead of being dropped silently. `features.allow_missing_columns:
+   true` turns this off on purpose (the missing flags are then left out with a warning); it is `false` by
+   default. The data pipeline's Great Expectations suites check the same columns (genres, popularity, vote
+   count / average, flags, embedding index order and encoder) before the outputs are versioned.
 3. **Leakage guard:** columns that look like genome tags, relevance scores, raw DNA scores, labels or the
    mapping version are rejected in the catalog and in the feature names.
 4. **Join** on `movieId`: labels ∩ catalog ∩ embeddings. Real run: 13,816 labelled → −150 without a catalog
@@ -245,6 +257,13 @@ MLFLOW_PORT=5001 docker compose up -d mlflow    # if port 5000 is taken (macOS A
    be excluded and logged, never zero-filled.
 5. **Data version** recorded for every run (model card + MLflow tags): the four `dvc.lock` hashes, a short
    `data_version_id`, `mapping_version`, encoder name, Git commit and whether the working tree was dirty.
+
+**Rebuilt embeddings and the hash check:** a data-pipeline rerun from the DVC-pulled data and caches
+reproduces the four files byte for byte, so the hash check passes. Re-encoding the plots from scratch
+(without the embedding cache) gives float differences up to ≈ 3e-7 (cosine ≥ 0.9999998): numerically the same
+model results, but a different MD5, so the hash check correctly blocks that file. Use the cached embeddings,
+or re-encode deliberately and `dvc commit` the result in the data pipeline (`Data-Pipeline/README.md`,
+section 12).
 
 Schema notes: there is no `runtime_filled` or `overview_short` column in the catalog; the model derives the
 runtime fill itself (`runtime` + `flag_missing_runtime`) and uses `flag_short_overview`. The catalog also has
@@ -263,6 +282,12 @@ a `year_raw` column (raw release year), which is metadata, not a genome score.
 | `language` | `language=<group>` one-hot | train categories; unseen → all zeros |
 | `popularity` | `log1p_popularity`, `log1p_vote_count`, `vote_average_scaled` | log1p (counts), standardised |
 | `flags` | `flag_short_overview`, `flag_missing_overview`, `flag_missing_runtime`, `flag_runtime_outlier`, `flag_year_mismatch`, `flag_unknown_language` | known at prediction time |
+
+`flag_short_overview` and `flag_missing_overview` are **constant (always False)** on the current genome-stage
+data: every one of the 13,666 movies has an overview of at least 46 characters. They carry no signal (a
+constant column cannot help any model), and `flag_short_overview` gives a one-value bias slice. They
+are kept so the feature set does not change if a later data stage (e.g. TMDB stage `rest`) adds movies with
+short or missing overviews.
 
 All statistics are fitted on the **training split only** and saved with the model as JSON
 (`features.json`). `era`, `primary_genre` and `popularity_bucket` are slice columns for the bias analysis,
@@ -516,7 +541,9 @@ Part 1 LightGBM (the second from the reproducibility rerun), v3 Part 2 (`candida
 `champion`, because models trained in GitHub Actions live in that run's temporary MLflow store, section 23).
 
 Reproducibility: two Part 1 runs with seed 42 gave the same split hash and bit-identical metrics; Docker
-matches within 3.6e-5 MAE (section 6).
+matches within 3.6e-5 MAE (section 6). A full `run-all --tuned-params` on the pulled data reproduces the final
+model exactly (validation MAE 0.15414, test MAE 0.15635). Embeddings re-encoded from scratch are blocked by
+the hash check (section 8); with `--skip-hash-check` they give validation MAE 0.15412 and the same test MAE.
 
 ## 21. Testing
 
@@ -536,7 +563,7 @@ tuning, bias, registry and CI configs. No data or model files are committed.
 |---|---|
 | `test_config.py` | YAML loading, path resolution, env overrides, validation errors |
 | `test_data_loader.py` | hash check (happy path, mismatch, missing file, lock problems), DVC directory hash, duplicates, label range, embedding shape / order / NaN, leakage guard, join counts, sampling, Git info |
-| `test_features.py` | shapes, groups, train-only fitting, missing year, invalid runtime, unseen categories, save/load, leakage guard |
+| `test_features.py` | shapes, groups, train-only fitting, missing year, invalid runtime, unseen categories, save/load, leakage guard; a missing flag column stops the loader and the feature builder, unless `features.allow_missing_columns` is set (then left out with a warning); the switch is off in the real config |
 | `test_splits.py` | determinism, disjointness, ratios, strata, merged small strata, save/reload, tampering, test guard |
 | `test_models.py` | every model: shapes, [0, 1], save/load identity, seed reproducibility; early stopping, callbacks, weights |
 | `test_evaluate.py`, `test_select.py` | metrics vs hand-computed values, tables, plots; selection, tie-break, gates, final selection branches, bundle, model card |
@@ -545,19 +572,20 @@ tuning, bias, registry and CI configs. No data or model files are committed.
 | `test_tuning.py`, `test_sensitivity.py` | search-space parsing, objective, determinism, pruning, trial logging, resume, caps, sweeps |
 | `test_explain.py`, `test_bias.py` | SHAP grouping and additivity, explainers, permutation importance, slice metrics with a built-in gap, gate logic, bootstrap CI, re-weighting, re-sampling |
 | `test_part{1,2,3}_integration.py` | each part end to end on fixtures; `run-all` registers `champion-candidate`; "none pass the bias gate" branch |
+| `test_fast_reports.py` | a fast `run-all --tuned-params` leaves `reports/part1–3/` byte-identical and writes `reports/fast/`; a single fast command reads the committed earlier part; `--write-reports` updates `reports/part1–3/`; `--write-reports` with `--sample-size` is rejected |
 | `test_registry.py` | bundle create / verify (archive and member checksum mismatch), version naming, push / pull round trip, champion + history, local backend, gcloud command construction with a fake runner |
 | `test_promote.py` | promotion rule (better, within tolerance, worse, failed gates, no champion), dry-run flow promote → worse candidate not promoted → rollback (previous, specific, missing, corrupted), MLflow alias mirroring, registry CLI |
 | `test_champion_store.py` | champion copy on promotion, idempotency, cleanup simulation (champions never deleted), rollback to a cleaned-up champion, corrupted protected copy, backfill without TEST entries |
 | `test_ci_run.py`, `test_notify.py` | `ci-run` sequencing and exit codes (validation / bias failure block the registry, promote guard, "not promoted" visible with exit 0), overrides, dry-run never calls gcloud; notification payloads, warning annotation, no-op without a webhook, post to a local fake server |
 
-Current status: **195 tests pass** (Parts 1–3: 139, Part 4: 33, Part 5: 23), coverage **98%** of
+Current status: **204 tests pass** (Parts 1–3: 148, Part 4: 33, Part 5: 23), coverage **98%** of
 `src/vibespace_model`, ruff clean, actionlint clean.
 
 ## 22. Configuration
 
 | File | Sections |
 |---|---|
-| `configs/model_config.yaml` | paths, data files + hash-checked files, targets, features, split, slices, model defaults, explain, gate, `registry` (project, repositories, packages incl. `champion_package`, bucket, promotion tolerance, dry-run folder), `ci` (family, tuned params, expected split hash, local alias) |
+| `configs/model_config.yaml` | paths, data files + hash-checked files, targets, features (incl. `allow_missing_columns`, default `false`), split, slices, model defaults, explain, gate, `registry` (project, repositories, packages incl. `champion_package`, bucket, promotion tolerance, dry-run folder), `ci` (family, tuned params, expected split hash, local alias) |
 | `configs/tuning.yaml` | sampler, pruner, budgets and time caps, search spaces, sensitivity settings |
 | `configs/bias.yaml` | slice columns, gate (size, ratio), bootstrap, mitigation |
 
@@ -584,6 +612,9 @@ Relative paths resolve against `Model-Pipeline/`. Environment overrides: `RANDOM
 - **Registry consistency:** the GCP registry is the source of truth; the local MLflow alias `champion` is a
   mirror and is only moved when the matching version exists in the local store (a model trained in CI lives
   in that run's temporary MLflow store).
+- **Two constant flags:** `flag_short_overview` and `flag_missing_overview` are always False on the current
+  genome-stage data (section 9), so they add nothing to the model and `flag_short_overview` is a one-value
+  bias slice; they become informative only once the catalog contains movies with short or missing overviews.
 - **Identical retrains are promoted:** the rule allows "no worse by more than 0.002", so each successful CI
   run with unchanged data adds a version and becomes champion; the cleanup policy keeps the newest 10 regular
   versions and every champion is protected.

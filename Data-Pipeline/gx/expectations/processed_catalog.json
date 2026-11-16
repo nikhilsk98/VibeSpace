@@ -124,6 +124,197 @@
         ]
       },
       "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "genre_count",
+        "max_value": null,
+        "min_value": 1
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "genres_known",
+        "value_set": [
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "popularity"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "popularity",
+        "max_value": 10000,
+        "min_value": 0
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "vote_count"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "vote_count",
+        "max_value": 10000000,
+        "min_value": 0
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "vote_average"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "vote_average",
+        "max_value": 10,
+        "min_value": 0
+      },
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "kwargs": {
+        "column": "flag_short_overview"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_short_overview"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_short_overview",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_overview"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_overview"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_overview",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_runtime"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_runtime"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_missing_runtime",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "flag_runtime_outlier"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_runtime_outlier"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_runtime_outlier",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "flag_year_mismatch"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_year_mismatch"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_year_mismatch",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "kwargs": {
+        "column": "flag_unknown_language"
+      },
+      "type": "expect_column_to_exist"
+    },
+    {
+      "kwargs": {
+        "column": "flag_unknown_language"
+      },
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "kwargs": {
+        "column": "flag_unknown_language",
+        "value_set": [
+          false,
+          true
+        ]
+      },
+      "type": "expect_column_values_to_be_in_set"
     }
   ],
   "name": "processed_catalog"

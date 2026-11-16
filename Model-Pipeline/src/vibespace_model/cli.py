@@ -25,7 +25,7 @@ from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
 from vibespace_model.config import load_config  # noqa: E402
-from vibespace_model.errors import VibeSpaceModelError  # noqa: E402
+from vibespace_model.errors import ConfigError, VibeSpaceModelError  # noqa: E402
 
 EXIT_OK, EXIT_VALIDATION_GATE, EXIT_BIAS_GATE, EXIT_ERROR = 0, 1, 2, 3
 REGISTRY_COMMANDS = ("push", "pull", "champion", "promote", "rollback", "list-versions", "protect")
@@ -68,6 +68,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--tuned-params",
         default=None,
         help="reuse best_params.json from an earlier tune run instead of searching",
+    )
+    parser.add_argument(
+        "--write-reports",
+        action="store_true",
+        help="with --tuned-params: write the reports to reports/part1-3 (default: reports/fast, git-ignored)",
     )
     parser.add_argument(
         "--stage",
@@ -140,6 +145,16 @@ def run_command(args: argparse.Namespace) -> int:
     cfg = load_config(args.config, args.tuning_config, args.bias_config, sample_size=args.sample_size)
     skip = bool(args.skip_hash_check)
     tuned = Path(args.tuned_params) if args.tuned_params else None
+    if args.write_reports and args.sample_size:
+        raise ConfigError(
+            "--write-reports cannot be combined with --sample-size (sample reports go to reports/sample)"
+        )
+    cfg.fast_reports = tuned is not None and not args.write_reports
+    if cfg.fast_reports:
+        LOGGER.info(
+            "Fast run (--tuned-params): reports go to %s; add --write-reports to update reports/part1-3",
+            cfg.reports_base,
+        )
     command = args.command
 
     if command == "train":

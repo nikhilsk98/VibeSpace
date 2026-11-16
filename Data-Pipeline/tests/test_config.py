@@ -78,3 +78,17 @@ def test_sample_runs_write_reports_to_sample_folder(tmp_path):
     full = PipelineConfig(reports_dir=tmp_path)
     assert full.run_reports_dir == tmp_path
     assert PipelineConfig(reports_dir=tmp_path, sample_size=200).run_reports_dir == tmp_path / "sample"
+
+
+def test_sample_runs_write_data_to_sample_tree(tmp_path):
+    full = PipelineConfig(data_dir=tmp_path)
+    assert (full.interim_dir, full.processed_dir, full.metrics_dir) == (
+        tmp_path / "interim", tmp_path / "processed", tmp_path / "metrics")
+    assert not full.is_sample and full.output_dir == tmp_path
+    sample = PipelineConfig(data_dir=tmp_path, sample_size=300)
+    assert sample.is_sample and sample.output_dir == tmp_path / "sample"
+    assert (sample.interim_dir, sample.processed_dir, sample.metrics_dir) == (
+        tmp_path / "sample" / "interim", tmp_path / "sample" / "processed", tmp_path / "sample" / "metrics")
+    # raw inputs and caches are shared between full and sample runs
+    assert (sample.raw_dir, sample.cache_dir, sample.tmdb_cache_dir) == (
+        full.raw_dir, full.cache_dir, full.tmdb_cache_dir)
