@@ -52,6 +52,24 @@ def test_failure_raises_dvc_error(dvc_cfg):
         dv.version_outputs(replace(dvc_cfg, dvc_push=True), runner=Recorder(fail_on="push"))
 
 
+def test_sample_run_is_never_versioned(dvc_cfg, monkeypatch):
+    warnings: list[str] = []
+    monkeypatch.setattr(dv.logger, "warning", lambda msg, *args: warnings.append(msg % args))
+    rec = Recorder()
+    out = dv.version_outputs(replace(dvc_cfg, sample_size=300, dvc_push=True), runner=rec)
+    assert rec.commands == []  # no dvc commit, no dvc push, no dvc status
+    assert out["skipped"] and not out["committed"] and not out["pushed"]
+    assert "sample run" in out["reason"]
+    assert warnings and "DVC versioning skipped" in warnings[0] and "sample_size=300" in warnings[0]
+
+
+def test_full_run_still_commits(dvc_cfg):
+    rec = Recorder()
+    out = dv.version_outputs(replace(dvc_cfg, sample_size=None), push=False, runner=rec)
+    assert rec.commands == [["commit", "--force"], ["status"]] and out["committed"]
+    assert "skipped" not in out
+
+
 def test_missing_dvc_yaml(cfg, monkeypatch):
     monkeypatch.setattr(dv.shutil, "which", lambda name: "/usr/bin/dvc")
     with pytest.raises(DVCError, match="dvc.yaml"):

@@ -7,3 +7,5 @@ Data-Pipeline/.venv/
 Data-Pipeline/.cache/
 Data-Pipeline/logs/
 **/__pycache__/
+# outputs of sample runs: never versioned
+Data-Pipeline/data/sample/

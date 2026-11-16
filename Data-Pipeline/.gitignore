@@ -1,6 +1,8 @@
 # Data lives in DVC, never in Git (dvc.yaml / dvc.lock are committed instead)
 /data/*
 !/data/.gitkeep
+# Outputs of sample runs (--sample-size / DAG param sample_size): never committed or versioned
+/data/sample/
 
 # Logs (Airflow task logs, pipeline.log, alerts.log)
 /logs/*
