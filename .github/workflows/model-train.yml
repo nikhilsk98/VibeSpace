@@ -98,7 +98,10 @@ jobs:
           set -euo pipefail
           python -m venv "${RUNNER_TEMP}/dvc-venv"
           "${RUNNER_TEMP}/dvc-venv/bin/pip" install --quiet "dvc[gs]==3.59.1" --constraint "${DVC_CONSTRAINTS}"
-          echo "${RUNNER_TEMP}/dvc-venv/bin" >> "$GITHUB_PATH"
+          # expose only the dvc executable, so later steps keep the Model-Pipeline python
+          mkdir -p "${RUNNER_TEMP}/dvc-bin"
+          ln -s "${RUNNER_TEMP}/dvc-venv/bin/dvc" "${RUNNER_TEMP}/dvc-bin/dvc"
+          echo "${RUNNER_TEMP}/dvc-bin" >> "$GITHUB_PATH"
 
       - name: Authenticate to Google Cloud (Workload Identity Federation)
         if: ${{ !env.ACT }}
