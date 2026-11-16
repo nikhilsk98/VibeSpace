@@ -627,9 +627,9 @@ Storage bucket (project `vibespace-mlops`, region `us-east1`, uniform bucket-lev
 prevention enforced). It holds every data version the pipeline has pushed so far. Nobody can read it without
 being granted access, and no credentials are stored in the repository.
 
-The old local remote `localstore` (`../dvc-storage`) is still listed as a non-default entry. It is only a
-backup on the machine that first ran the pipeline; `dvc pull` and `dvc push` never use it unless you pass
-`-r localstore`.
+The old local remote `localstore` (`../dvc-storage`) is still listed as a non-default entry. The local copy
+it pointed to has been removed (every object is in the bucket), so use only `gcs`; `dvc pull` and `dvc push`
+never use `localstore` unless you pass `-r localstore`.
 
 **Access for a teammate (one-time setup):**
 
@@ -916,7 +916,11 @@ from real runs.
 * **TMDB stage `rest` not yet run:** the ≈48,600 movies without Tag Genome data are not in the catalog yet.
   Running that stage is the main step to improve representation of small slices.
 * **DVC remote access:** data is in a private GCS bucket that team members reach with their own Google
-  accounts (section 12). The Airflow containers cannot push to it yet; the next step is CI and container
-  access through a dedicated service account.
-* **Next:** train the Movie DNA model on these outputs, with re-sampling of small genre slices as decided
-  in the bias report.
+  accounts (section 12). CI already reads it: the model training workflow (`model-train.yml`) pulls the
+  processed files with the service account `vibespace-ci` through Workload Identity Federation (read-only,
+  `roles/storage.objectViewer`). The Airflow containers cannot push to it yet; container access is the
+  remaining step.
+* **Model:** the Movie DNA model is trained on these outputs in
+  [`../Model-Pipeline`](../Model-Pipeline/README.md). Re-sampling and re-weighting of small genre slices were
+  evaluated there; the unmitigated tuned MLP was kept because it passes the bias gate and both mitigations
+  cost accuracy.
