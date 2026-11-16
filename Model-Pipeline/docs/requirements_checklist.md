@@ -2,7 +2,7 @@
 
 Every item of the course's Model Development Guidelines mapped to the code, tests and evidence in this
 folder. Paths are relative to `Model-Pipeline/` unless they start with `.github/`. All numbers come from the
-full run on 13,666 movies (split hash `30100836287cbcfc…`). Test counts: 195 tests, coverage 98% of
+full run on 13,666 movies (split hash `30100836287cbcfc…`). Test counts: 204 tests, coverage 98% of
 `src/vibespace_model`. CI evidence: `model-train` on `main`, [run 43800488718](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718); release tag `model-pipeline-v1.0`.
 
 ## 1. Model development and ML code
@@ -73,7 +73,7 @@ full run on 13,666 movies (split hash `30100836287cbcfc…`). Test counts: 195 t
 
 | Item | Evidence |
 |---|---|
-| Tests | 195 offline tests (`pytest`), coverage 98% (`model-ci.yml` fails under 85%) |
+| Tests | 204 offline tests (`pytest`), coverage 98% (`model-ci.yml` fails under 85%) |
 | Style | `ruff check` and `ruff format --check` clean (`ruff.toml`) |
 | Workflows | `actionlint` (with shellcheck) 0 findings on `.github/workflows/` |
 | Reproducibility | fixed seeds; two Part 1 runs bit-identical; Docker matches within tolerance |
