@@ -419,7 +419,9 @@ Verified on GCP: the first champion `v20261115-005730-e63b305` (Part 3 final mod
 Artifact Registry with valid checksums and predictions on 100 validation movies identical to the local model;
 a deliberately worse TEST candidate (the mean baseline) was not promoted, a temporary switch was rolled back
 correctly, and the test bundle was deleted (its two history entries, marked `TEST`, are kept as an audit
-trail). Both real champions are in the protected store and pull back with valid checksums.
+trail). Both champions promoted from a laptop (`v20261115-005730-e63b305`, `v20261115-011119-e63b305`) pull
+back from the protected store with valid checksums. Every champion since then was promoted by CI and is
+protected as well: `list-versions` shows 4 protected champions (section 20).
 
 ## 19. CI/CD
 
@@ -428,7 +430,7 @@ Two GitHub Actions workflows in `.github/workflows/` (repository root):
 | Workflow | Triggers | What it does |
 |---|---|---|
 | `model-ci.yml` | pull request / push touching `Model-Pipeline/**` | Python 3.11 (pip cache), CPU PyTorch + requirements, `ruff check`, `ruff format --check`, full `pytest` with coverage (fails under 85%). No GCP, no secrets. |
-| `model-train.yml` | push to `main`, `model-*`, `data-pipeline` touching `Model-Pipeline/**`, `Data-Pipeline/dvc.lock` or `Data-Pipeline/configs/**`; manual **Run workflow** with a `dry_run` input | job **train, gate and promote**: install (DVC in its own venv with the Airflow constraints), Workload Identity login, `dvc pull` of the 4 processed files only, then `ci-run` steps **train** (tuned MLP from `ci.params`, no Optuna, split hash checked) → **validate** → **bias** → **promote**; "not promoted" warning, job summary, notification message, optional Slack, artifacts. Job **trainer image** (push to `main` only) builds and pushes the Docker image. |
+| `model-train.yml` | push to `main`, `model-*`, `data-pipeline` touching `Model-Pipeline/**`, `Data-Pipeline/dvc.lock` or `Data-Pipeline/configs/**`; manual **Run workflow** with a `dry_run` input | job **train, gate and promote**: install (DVC in its own venv with the Airflow constraints; only the `dvc` executable is put on `PATH`, so every later step keeps the Model-Pipeline Python: fix from [PR #21](https://github.com/nikhilsk98/VibeSpace/pull/21)), Workload Identity login, `dvc pull` of the 4 processed files only, then `ci-run` steps **train** (tuned MLP from `ci.params`, no Optuna, split hash checked) → **validate** → **bias** → **promote**; "not promoted" warning, job summary, notification message, optional Slack, artifacts. Job **trainer image** (push to `main` only) builds and pushes the Docker image. |
 
 - **Gates stop the run:** a failed validation or bias gate fails its step; the promote step is skipped, so
   nothing reaches the registry. Exit codes: 1 validation, 2 bias, 3 error.
@@ -471,8 +473,18 @@ act workflow_dispatch -W .github/workflows/model-train.yml --input dry_run=true 
     -P ubuntu-latest=catthehacker/ubuntu:act-latest --artifact-server-path /tmp/act-artifacts
 ```
 
-The workflows have not run on GitHub yet: they need the repository variables, which are set after the team
-push ([`docs/ci_setup_for_later.md`](docs/ci_setup_for_later.md)).
+**Running on GitHub:** the repository variables `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`
+are set (one-time setup, recorded in [`docs/ci_setup_for_later.md`](docs/ci_setup_for_later.md)).
+`model-train` ran successfully on `main` ([run 43800488718](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718)):
+Workload Identity login, `dvc pull`, train, validation gate passed (MAE 38.5% lower than the baseline,
+R² 0.513), bias gate passed (worst gated slice `primary_genre=romance`, 1.102 × overall), promotion of
+`v20261116-035311-46abd39` within tolerance, and the trainer image pushed as `trainer:46abd39` and `:latest`
+(train job 3 min 45 s, image job 3 min 38 s). `model-ci` passes on pull requests and on `main` (≈ 7 min).
+The first run on `main` failed at the train step because the DVC install step put the whole DVC venv on
+`PATH`, so `python` could not import `vibespace_model`; [PR #21](https://github.com/nikhilsk98/VibeSpace/pull/21)
+puts only the `dvc` executable on `PATH` (local `act` runs skip that step, which is why it only showed on
+GitHub). The submitted state is tagged
+[`model-pipeline-v1.0`](https://github.com/nikhilsk98/VibeSpace/tree/model-pipeline-v1.0/Model-Pipeline).
 
 ## 20. Results
 
@@ -493,11 +505,15 @@ Final model: 38.5% lower validation MAE than the mean baseline; test RMSE 0.2029
 MAE per dimension ranges from 0.136 (energy) to 0.180 (inspiration). Training times (CPU): tuned MLP 2.8 s,
 default LightGBM 35 s, tuned LightGBM 309 s.
 
-**Current champion (GCP):** `v20261115-011119-e63b305`, the tuned MLP retrained by the first real `ci-run`
-(validation MAE 0.15414, test MAE 0.15635; promoted within tolerance against the previous champion
-`v20261115-005730-e63b305`, the Part 3 bundle, now "superseded" and protected). Local MLflow: v1–v2 Part 1
-LightGBM (the second from the reproducibility rerun), v3 Part 2 (`candidate`), v4 Part 3 final
-(`champion-candidate`), v5 `ci-run` model (`champion`, `ci-candidate`).
+**Current champion (GCP):** `v20261116-035311-46abd39`, the tuned MLP retrained by `model-train` on `main`
+([run 43800488718](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718); validation MAE
+0.15417, test MAE 0.15635; promoted within tolerance, 0.00003 worse than the previous champion
+`v20261116-034810-ec4bd52`). Earlier champions, all now "superseded" and protected:
+`v20261115-005730-e63b305` (Part 3 bundle), `v20261115-011119-e63b305` (first real `ci-run`, from a laptop)
+and `v20261116-034810-ec4bd52` (first `model-train` run on GitHub, on `ml-integration`). Local MLflow: v1–v2
+Part 1 LightGBM (the second from the reproducibility rerun), v3 Part 2 (`candidate`), v4 Part 3 final
+(`champion-candidate`), v5 laptop `ci-run` model (`ci-candidate`; it still carries the local alias
+`champion`, because models trained in GitHub Actions live in that run's temporary MLflow store, section 23).
 
 Reproducibility: two Part 1 runs with seed 42 gave the same split hash and bit-identical metrics; Docker
 matches within 3.6e-5 MAE (section 6).
@@ -571,7 +587,8 @@ Relative paths resolve against `Model-Pipeline/`. Environment overrides: `RANDOM
 - **Identical retrains are promoted:** the rule allows "no worse by more than 0.002", so each successful CI
   run with unchanged data adds a version and becomes champion; the cleanup policy keeps the newest 10 regular
   versions and every champion is protected.
-- **CI has not run on GitHub yet:** the workflows were tested locally with `act` (GCP steps skipped, fixture
-  data, dry-run registry) and actionlint; the first real run happens after the team push
-  (`docs/ci_setup_for_later.md`).
+- **Local `act` runs do not cover the GCP steps:** under `act` the GCP, DVC and Slack steps are skipped
+  (fixture data, dry-run registry), so problems in those steps only show on GitHub, as with the `PATH`
+  problem fixed in [PR #21](https://github.com/nikhilsk98/VibeSpace/pull/21). The workflows now run on GitHub
+  (section 19; setup record in `docs/ci_setup_for_later.md`).
 - Only Model 1 (Movie DNA) is in scope; the ranker (Model 3) comes later.

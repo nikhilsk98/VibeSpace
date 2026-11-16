@@ -827,8 +827,11 @@ Potential orchestration:
 > four candidate models (mean baseline, Ridge, LightGBM, PyTorch MLP) with MLflow tracking and Optuna,
 > explains them with SHAP and permutation importance, checks bias across movie slices with Fairlearn,
 > pushes the selected model to a model registry on Google Cloud with champion protection and rollback, and
-> runs the train → validate → bias → promote sequence in GitHub Actions. Setup, usage and results:
-> [`Model-Pipeline/README.md`](Model-Pipeline/README.md).
+> runs the train → validate → bias → promote sequence in GitHub Actions
+> ([successful run on `main`](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718); current
+> champion `v20261116-035311-46abd39`, validation MAE 0.1542, test MAE 0.1563). Release tag:
+> [`model-pipeline-v1.0`](https://github.com/nikhilsk98/VibeSpace/tree/model-pipeline-v1.0/Model-Pipeline).
+> Setup, usage and results: [`Model-Pipeline/README.md`](Model-Pipeline/README.md).
 
 ---
 

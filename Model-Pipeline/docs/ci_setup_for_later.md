@@ -1,13 +1,16 @@
-# CI/CD setup to do after the team push (Part 6)
+# CI/CD setup after the team push (Part 6): done
 
-Everything on the Google Cloud side already exists (see `../infra/README.md`). The workflows
-`.github/workflows/model-ci.yml` and `.github/workflows/model-train.yml` were built and tested locally
-(`act`, actionlint) but have **never run on GitHub**. Nothing was pushed and no GitHub setting was changed.
-Do the steps below **after** the workflow files and `Model-Pipeline/` are on `main`.
+**Status: the one-time setup is done (2026-11-16).** Both repository variables are set, and
+`.github/workflows/model-train.yml` has run successfully on `ml-integration` (dry run and real run) and on
+`main` ([run 43800488718](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718)); the submitted
+state is tagged `model-pipeline-v1.0`. Sections 1–3 are kept as a record of what was done and how to repeat
+it (for example in a fork or a new repository); sections 4–5 are the reference for operating the pipeline.
+Everything on the Google Cloud side is described in `../infra/README.md`.
 
-## 1. Repository variables (required for `model-train.yml`)
+## 1. Repository variables (required for `model-train.yml`): done
 
-Run from any folder with `gh` logged in as a repository admin:
+Set on 2026-11-16; `gh variable list` shows both. The commands used (run from any folder with `gh` logged in
+as a repository admin):
 
 ```bash
 gh variable set GCP_WORKLOAD_IDENTITY_PROVIDER --repo nikhilsk98/VibeSpace \
@@ -21,9 +24,9 @@ These are **variables, not secrets**: they are resource names, not credentials. 
 GitHub's OIDC token is exchanged for short-lived Google credentials (Workload Identity Federation), and only
 workflows of `nikhilsk98/VibeSpace` are accepted (`assertion.repository == 'nikhilsk98/VibeSpace'`).
 
-## 2. Optional: Slack notifications
+## 2. Optional: Slack notifications (not set up)
 
-Create an incoming webhook in Slack (Apps → Incoming Webhooks → Add to a channel), then:
+The secret `SLACK_WEBHOOK_URL` does not exist, so the Slack step is skipped. To enable it, create an incoming webhook in Slack (Apps → Incoming Webhooks → Add to a channel), then:
 
 ```bash
 gh secret set SLACK_WEBHOOK_URL --repo nikhilsk98/VibeSpace     # paste the webhook URL when prompted
@@ -32,7 +35,21 @@ gh secret set SLACK_WEBHOOK_URL --repo nikhilsk98/VibeSpace     # paste the webh
 Without this secret the Slack step is skipped (never an error). The run still writes a job summary, and
 GitHub emails the person who triggered a failed run (Settings → Notifications → Actions).
 
-## 3. First real run
+## 3. First real runs: done
+
+| Run | Branch, mode | Duration | Result |
+|---|---|---|---|
+| [43799278897](https://github.com/nikhilsk98/VibeSpace/actions/runs/43799278897) | `ml-integration`, dry run | 3 min 28 s | gates passed, promoted in the dry-run registry |
+| [43799973289](https://github.com/nikhilsk98/VibeSpace/actions/runs/43799973289) | `ml-integration`, real | 4 min 10 s | pushed and promoted `v20261116-034810-ec4bd52` (0.00001 better than the laptop champion) |
+| [43800488718](https://github.com/nikhilsk98/VibeSpace/actions/runs/43800488718) | `main`, push after the merge | 7 min 30 s | pushed and promoted `v20261116-035311-46abd39` (within tolerance, 0.00003 worse); trainer image `trainer:46abd39` + `:latest` |
+
+The first run on `main` ([43798375472](https://github.com/nikhilsk98/VibeSpace/actions/runs/43798375472))
+failed at the train step (`No module named 'vibespace_model'`): the DVC install step put the whole DVC venv on
+`PATH`. [PR #21](https://github.com/nikhilsk98/VibeSpace/pull/21) puts only the `dvc` executable on `PATH`;
+every run since then is green.
+
+Commands for a manual run (they work once `model-train.yml` is on the default branch `main`; `--ref` can then
+name any branch that has the workflow):
 
 ```bash
 gh workflow run model-train.yml --repo nikhilsk98/VibeSpace --ref main -f dry_run=true    # safe first run
@@ -40,18 +57,20 @@ gh run watch --repo nikhilsk98/VibeSpace                                        
 gh workflow run model-train.yml --repo nikhilsk98/VibeSpace --ref main                      # real promotion
 ```
 
-Or: GitHub → **Actions** → **model-train** → **Run workflow** (tick "Dry run" for the first one).
+Or: GitHub → **Actions** → **model-train** → **Run workflow** (tick "Dry run" for a test run).
 `model-ci.yml` runs by itself on every pull request or push that touches `Model-Pipeline/**`.
 
-**What success looks like** (job "train, gate and promote", about 10–15 min):
+**What success looks like** (job "train, gate and promote", about 4 min; on `main` the trainer image job
+adds about 4 min):
 
 1. Install, Workload Identity login, `dvc pull` of the 4 processed files (≈ 30 MB, not the raw data).
 2. Train: the tuned MLP trains in a few seconds; the split hash matches `ci.expected_split_hash`.
 3. Validation gate passes (MAE improvement ≈ 38% ≥ 15%, R² ≈ 0.51 ≥ 0.30).
 4. Bias gate passes (worst gated slice ≈ 1.10 × overall ≤ 1.25).
-5. Promote: the candidate is compared with the champion on the same split. Expected result: identical
-   validation MAE (same data, parameters and seed), so **"promoted"** within the 0.002 tolerance, or
-   "not promoted (rollback)" if it is worse; either way the job is green.
+5. Promote: the candidate is compared with the champion on the same split. Expected result: nearly identical
+   validation MAE (same data, parameters and seed; the GitHub runs differed from the champion by
+   0.00001–0.00003), so **"promoted"** within the 0.002 tolerance, or "not promoted (rollback)" if it is
+   worse; either way the job is green.
 6. Artifacts `model-train-<run id>` (metrics, bias report, model card, plots, decision) are attached.
 
 **What a not-promoted run looks like.** The job is **green** (exit code 0): the pipeline worked, the new
@@ -89,8 +108,11 @@ On a push to `main`, a second job **trainer image** builds `Model-Pipeline/Docke
 | `dvc pull` "missing cache files" | Somebody changed `Data-Pipeline/dvc.lock` without `dvc push`: run `dvc push` from the machine that produced the data. |
 | Train step fails with "split hash … differs from ci.expected_split_hash" | The data changed (new `dvc.lock`). Retrain Parts 1–3 locally, then update `ci.expected_split_hash` and `ci.params` in `configs/model_config.yaml`. |
 | Promote fails with `PERMISSION_DENIED` on Artifact Registry or the bucket | Check `roles/artifactregistry.writer` on `vibespace-models` / `vibespace-images` and `roles/storage.objectAdmin` on `gs://vibespace-model-registry-nsk` (setup script). |
+| Train step fails with `No module named 'vibespace_model'` | `python` resolves to the DVC venv instead of the setup-python interpreter. Fixed in [PR #21](https://github.com/nikhilsk98/VibeSpace/pull/21): the DVC install step must put only the `dvc` executable on `PATH`, never the DVC venv's `bin/`. |
+| `gh workflow run` fails with HTTP 404 "workflow … not found on the default branch" | Manual runs need `model-train.yml` on `main`; until then only the push triggers start it. |
+| `actions/checkout` fails with "Repository not found" | Seen once as a transient GitHub problem (re-running the same attempt failed again); start a new run with `gh workflow run`. |
 | Validation or bias gate fails | The job stops there and nothing is pushed; read the reasons in the job summary and in `bias_report.md` (artifact). |
-| Run is slow or Actions minutes run out | Public repos are free; private repos get 2,000 min/month. One training run uses ≈ 15 min, `model-ci` ≈ 10 min. Pip downloads are cached by `setup-python`. |
+| Run is slow or Actions minutes run out | Public repos are free; private repos get 2,000 min/month. One training run uses ≈ 4 min (≈ 8 min on `main` with the trainer image job), `model-ci` ≈ 5–7 min. Pip downloads are cached by `setup-python`. |
 
 ## 5. Manual rollback from a laptop
 
