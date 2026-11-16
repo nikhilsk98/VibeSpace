@@ -3,3 +3,7 @@
 
 # OS / editor noise
 .DS_Store
+
+# Local progress page (never committed)
+progress.html
+vibespace-progress/

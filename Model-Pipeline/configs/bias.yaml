@@ -1,0 +1,19 @@
+# Part 3: bias detection and mitigation.
+# Slices are movie attributes: MovieLens and the app hold no user demographics.
+
+slice_columns: [language_group, era, primary_genre, popularity_bucket, flag_short_overview]
+min_gated_slice_size: 30       # slices with fewer movies are reported (bootstrap CI) but do not gate
+max_mae_ratio: 1.25            # gated slice MAE must be <= 1.25 x overall MAE
+bootstrap:
+  n_resamples: 1000
+  confidence: 0.95
+notable_gap_ratio: 1.15        # worst / best gated slice MAE above this triggers mitigation even if all pass
+
+mitigation:
+  # "auto" = the slice column with the worst gated ratio (largest gap if every slice passes)
+  column: auto
+  reweighting:
+    power: 1.0                 # weight = (1 / slice frequency) ** power, normalised to mean 1
+    max_weight: 20.0           # cap so a handful of movies cannot dominate training
+  resampling:
+    min_share_of_largest: 0.10 # oversample (with replacement) every slice to at least 10% of the largest

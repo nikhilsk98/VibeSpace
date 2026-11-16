@@ -1,0 +1,27 @@
+# Environments and secrets
+.venv/
+.env
+.env.*
+!.env.example
+
+# Model binaries, Optuna studies, MLflow stores (never in Git)
+/artifacts/*
+!/artifacts/.gitkeep
+/mlflow/*
+!/mlflow/.gitkeep
+/docker-out/
+
+# Reports from sample runs (--sample-size); full-run reports are committed
+/reports/sample/
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage*
+coverage.xml
+htmlcov/
+/ci-out/

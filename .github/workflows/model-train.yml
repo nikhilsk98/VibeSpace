@@ -1,0 +1,246 @@
+# Movie DNA training pipeline: train (tuned params, no Optuna) -> validation gate -> bias gate -> promote.
+#
+# Google Cloud access is keyless (Workload Identity Federation) through two repository variables:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT        (see Model-Pipeline/docs/ci_setup_for_later.md)
+# Optional secret SLACK_WEBHOOK_URL enables Slack messages; without it the Slack step is skipped.
+# Under `act` (local runs) every Google Cloud step is skipped and the run uses synthetic fixture data with a
+# dry-run registry (a local folder), so the whole flow can be exercised without credentials.
+name: model-train
+
+on:
+  push:
+    branches:
+      - main
+      - "model-*"
+      - data-pipeline
+    paths:
+      - "Model-Pipeline/**"
+      - "Data-Pipeline/dvc.lock"
+      - "Data-Pipeline/configs/**"
+      - ".github/workflows/model-train.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: train and gate, but write the registry to a local folder instead of GCP"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: model-train-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DVC_CONSTRAINTS: https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt
+
+jobs:
+  train:
+    name: train, gate and promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+        working-directory: Model-Pipeline
+    env:
+      SLACK_ENABLED: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+      CI_OUT: ci-out
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            Model-Pipeline/requirements.txt
+            Model-Pipeline/requirements-dev.txt
+
+      - name: Choose mode
+        env:
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${ACT:-}" ]]; then
+            fixture="${RUNNER_TEMP}/fixture"
+            {
+              echo "DRY_RUN=true"
+              echo "USE_FIXTURES=true"
+              echo "FIXTURE_DIR=${fixture}"
+              echo "CI_ARGS=--config ${fixture}/Model-Pipeline/configs/model_config.yaml --skip-hash-check --sample-size 200 --dry-run"
+            } >> "$GITHUB_ENV"
+          else
+            dry=""
+            if [[ "${INPUT_DRY_RUN:-false}" == "true" ]]; then dry=" --dry-run"; fi
+            {
+              echo "DRY_RUN=${INPUT_DRY_RUN:-false}"
+              echo "USE_FIXTURES=false"
+              echo "CI_ARGS=--config configs/model_config.yaml${dry}"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Install Model-Pipeline
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.15.0"
+          pip install -r requirements.txt
+          pip install -e . --no-deps
+
+      - name: Install DVC (separate venv, Airflow constraints as in Data-Pipeline/README.md)
+        if: ${{ !env.ACT }}
+        run: |
+          set -euo pipefail
+          python -m venv "${RUNNER_TEMP}/dvc-venv"
+          "${RUNNER_TEMP}/dvc-venv/bin/pip" install --quiet "dvc[gs]==3.59.1" --constraint "${DVC_CONSTRAINTS}"
+          echo "${RUNNER_TEMP}/dvc-venv/bin" >> "$GITHUB_PATH"
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        if: ${{ !env.ACT }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        if: ${{ !env.ACT }}
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Pull the processed data (DVC, only what the model needs)
+        if: ${{ !env.ACT }}
+        working-directory: .
+        run: |
+          set -euo pipefail
+          dvc pull \
+            Data-Pipeline/data/processed/movies_clean.parquet \
+            Data-Pipeline/data/processed/movie_dna_labels.parquet \
+            Data-Pipeline/data/processed/plot_embeddings.npy \
+            Data-Pipeline/data/processed/plot_embeddings_index.parquet
+          dvc status Data-Pipeline/dvc.yaml || true
+
+      - name: Build fixture data (local act runs only)
+        if: ${{ env.ACT }}
+        run: |
+          set -euo pipefail
+          python tests/fixtures/build_fixtures.py "${FIXTURE_DIR}"
+
+      - name: Train (tuned parameters, no Optuna)
+        id: train
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086  # CI_ARGS is a list of options
+          python -m vibespace_model.cli ci-run --ci-step train ${CI_ARGS} --out "${CI_OUT}"
+
+      - name: Validation gate
+        id: validate
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          python -m vibespace_model.cli ci-run --ci-step validate ${CI_ARGS} --out "${CI_OUT}"
+
+      - name: Bias gate
+        id: bias
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          python -m vibespace_model.cli ci-run --ci-step bias ${CI_ARGS} --out "${CI_OUT}"
+
+      - name: Promote (registry push + champion rule)
+        id: promote
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          python -m vibespace_model.cli ci-run --ci-step promote ${CI_ARGS} --out "${CI_OUT}"
+
+      - name: Flag a not-promoted result (warning annotation, job stays green)
+        if: success()
+        run: |
+          set -euo pipefail
+          python ci/notify.py --state "${CI_OUT}/state.json" --annotate
+
+      - name: Job summary
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -f "${CI_OUT}/job_summary.md" ]]; then
+            cat "${CI_OUT}/job_summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## VibeSpace Movie DNA training run" >> "$GITHUB_STEP_SUMMARY"
+            echo "The pipeline stopped before training started (see the failed step)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Notification message
+        id: notify
+        if: always()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          event=""
+          if [[ ! -f "${CI_OUT}/state.json" ]]; then event="--event pipeline_error"; fi
+          # shellcheck disable=SC2086
+          python ci/notify.py --state "${CI_OUT}/state.json" --run-url "${RUN_URL}" ${event}
+
+      - name: Slack notification (only when the SLACK_WEBHOOK_URL secret exists)
+        if: ${{ always() && env.SLACK_ENABLED == 'true' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          event=""
+          if [[ ! -f "${CI_OUT}/state.json" ]]; then event="--event pipeline_error"; fi
+          # shellcheck disable=SC2086
+          python ci/notify.py --state "${CI_OUT}/state.json" --run-url "${RUN_URL}" ${event}
+
+      - name: Upload run outputs (metrics, bias report, model card, plots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-train-${{ github.run_id }}
+          path: |
+            Model-Pipeline/ci-out/*.json
+            Model-Pipeline/ci-out/*.md
+            Model-Pipeline/ci-out/*.csv
+            Model-Pipeline/ci-out/*.png
+          if-no-files-found: warn
+          retention-days: 30
+
+  image:
+    name: trainer image
+    needs: train
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: Model-Pipeline
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push the trainer image
+        env:
+          IMAGE: us-east1-docker.pkg.dev/vibespace-mlops/vibespace-images/trainer
+        run: |
+          set -euo pipefail
+          gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+          tag="${GITHUB_SHA::7}"
+          docker build -t "${IMAGE}:${tag}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${tag}"
+          docker push "${IMAGE}:latest"

@@ -1,0 +1,33 @@
+{
+  "ridge": {
+    "alpha": 4.29497140732572
+  },
+  "lightgbm": {
+    "n_estimators": 2000,
+    "learning_rate": 0.010000117563463579,
+    "num_leaves": 102,
+    "max_depth": -1,
+    "min_child_samples": 71,
+    "subsample": 0.7707979872947792,
+    "subsample_freq": 1,
+    "colsample_bytree": 0.8595487233433785,
+    "reg_alpha": 0.07365952660656142,
+    "reg_lambda": 0.00043506932247251126,
+    "early_stopping_rounds": 50,
+    "n_jobs": 8
+  },
+  "mlp": {
+    "hidden_sizes": [
+      512,
+      256
+    ],
+    "dropout": 0.19892896697479936,
+    "learning_rate": 0.0006168783042294797,
+    "weight_decay": 2.918737247916876e-06,
+    "batch_size": 128,
+    "max_epochs": 200,
+    "patience": 15,
+    "huber_delta": 0.05,
+    "num_threads": 4
+  }
+}

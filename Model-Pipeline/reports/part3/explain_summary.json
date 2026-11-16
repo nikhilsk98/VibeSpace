@@ -1,0 +1,361 @@
+{
+  "n_explained": 1000,
+  "models": {
+    "mlp": {
+      "shap_share": {
+        "plot_embedding": 0.6028213975828091,
+        "genres": 0.2254897010674453,
+        "runtime": 0.012158878475200568,
+        "year": 0.0282474960304163,
+        "language": 0.021772630185711826,
+        "popularity": 0.10938703939135667,
+        "flags": 0.00012285726706034883
+      },
+      "shap_by_dimension": {
+        "energy": {
+          "plot_embedding": 0.7054745993072188,
+          "genres": 0.23467755055324332,
+          "runtime": 0.006958202937542613,
+          "year": 0.030058105198761797,
+          "language": 0.026237609513548952,
+          "popularity": 0.14002164507114723,
+          "flags": 0.0001765633961232379
+        },
+        "intensity": {
+          "plot_embedding": 0.7120150108609268,
+          "genres": 0.3327468906856365,
+          "runtime": 0.008929781989285785,
+          "year": 0.01657740551386957,
+          "language": 0.017220528231040803,
+          "popularity": 0.08866794339513139,
+          "flags": 7.933184716392135e-05
+        },
+        "pace": {
+          "plot_embedding": 0.7013787318848164,
+          "genres": 0.24582881779283952,
+          "runtime": 0.0068784512044564,
+          "year": 0.028464709956431144,
+          "language": 0.027259804345046646,
+          "popularity": 0.1334926744756234,
+          "flags": 0.0001635963035922032
+        },
+        "humor": {
+          "plot_embedding": 0.4787821963689789,
+          "genres": 0.32141895842761437,
+          "runtime": 0.009968334417463899,
+          "year": 0.018829327161794873,
+          "language": 0.016292808401909265,
+          "popularity": 0.11937078749257381,
+          "flags": 0.00014373564966139386
+        },
+        "darkness": {
+          "plot_embedding": 0.8464265339860402,
+          "genres": 0.30700328134205507,
+          "runtime": 0.012639733622528897,
+          "year": 0.022477720946173552,
+          "language": 0.02456281060252804,
+          "popularity": 0.13160147481461185,
+          "flags": 0.00011871948894200612
+        },
+        "hopefulness": {
+          "plot_embedding": 0.969232404181863,
+          "genres": 0.2708667689766307,
+          "runtime": 0.019610890156451226,
+          "year": 0.06109329846337694,
+          "language": 0.04160835390490049,
+          "popularity": 0.08302518413905166,
+          "flags": 0.000204596270933107
+        },
+        "emotional_intensity": {
+          "plot_embedding": 0.527399710324954,
+          "genres": 0.22202054148337041,
+          "runtime": 0.014891103193892955,
+          "year": 0.03870933051244491,
+          "language": 0.014025585807981624,
+          "popularity": 0.16337889895643004,
+          "flags": 0.00011541832017799605
+        },
+        "romance": {
+          "plot_embedding": 0.6714432358605271,
+          "genres": 0.23890261057510037,
+          "runtime": 0.02092857645116769,
+          "year": 0.02787085244569325,
+          "language": 0.02671482157616379,
+          "popularity": 0.07457919020223247,
+          "flags": 0.00017804479293437908
+        },
+        "suspense": {
+          "plot_embedding": 0.5707557258932089,
+          "genres": 0.25499851965322545,
+          "runtime": 0.008250354071888035,
+          "year": 0.032006694754562456,
+          "language": 0.0176888936112757,
+          "popularity": 0.18084496917631407,
+          "flags": 2.8172558782680426e-05
+        },
+        "complexity": {
+          "plot_embedding": 0.7183516582706485,
+          "genres": 0.24912596010793897,
+          "runtime": 0.015756615753783586,
+          "year": 0.028312754978257425,
+          "language": 0.013572898088788001,
+          "popularity": 0.16966846169307,
+          "flags": 0.00014029404529457677
+        },
+        "realism": {
+          "plot_embedding": 0.5272281029005762,
+          "genres": 0.2466438335178009,
+          "runtime": 0.014508810296073805,
+          "year": 0.03568431279505214,
+          "language": 0.02703013405818107,
+          "popularity": 0.12159022318710569,
+          "flags": 0.00011649426748117549
+        },
+        "inspiration": {
+          "plot_embedding": 0.8773276660667874,
+          "genres": 0.182616618982776,
+          "runtime": 0.028207044931316955,
+          "year": 0.04911615840198311,
+          "language": 0.047774192298984365,
+          "popularity": 0.10091900855838547,
+          "flags": 0.00022778949797615494
+        }
+      },
+      "permutation_mae_increase": {
+        "plot_embedding": 0.019295055888637218,
+        "genres": 0.07652155807558596,
+        "runtime": 0.002230093143014078,
+        "year": 0.008384886634381899,
+        "language": 0.004643912663160466,
+        "popularity": 0.04166861711408146,
+        "flags": 1.3208562318228756e-05
+      },
+      "top_metadata_features": [
+        {
+          "feature": "vote_average_scaled",
+          "mean_abs_shap": 0.07538048735348095
+        },
+        {
+          "feature": "genre=comedy",
+          "mean_abs_shap": 0.04071019552500709
+        },
+        {
+          "feature": "genre=drama",
+          "mean_abs_shap": 0.032535151741715736
+        },
+        {
+          "feature": "release_year_scaled",
+          "mean_abs_shap": 0.03243338926070009
+        },
+        {
+          "feature": "log1p_vote_count",
+          "mean_abs_shap": 0.029108919819646674
+        },
+        {
+          "feature": "genre=romance",
+          "mean_abs_shap": 0.027941411840445254
+        },
+        {
+          "feature": "genre=action",
+          "mean_abs_shap": 0.024603594905370972
+        },
+        {
+          "feature": "genre=thriller",
+          "mean_abs_shap": 0.024142197066203352
+        },
+        {
+          "feature": "genre=horror",
+          "mean_abs_shap": 0.023311468631567304
+        },
+        {
+          "feature": "log1p_popularity",
+          "mean_abs_shap": 0.021107297923678773
+        }
+      ],
+      "top_groups": [
+        "plot_embedding",
+        "genres",
+        "popularity"
+      ],
+      "seconds": 22.406848582992097
+    },
+    "lightgbm": {
+      "shap_share": {
+        "plot_embedding": 0.5668758105880543,
+        "genres": 0.2530661191272605,
+        "runtime": 0.011567466543424026,
+        "year": 0.03129467112638903,
+        "language": 0.02142220113584052,
+        "popularity": 0.11577373147903178,
+        "flags": 0.0
+      },
+      "shap_by_dimension": {
+        "energy": {
+          "plot_embedding": 0.35297452571047266,
+          "genres": 0.1641675948669281,
+          "runtime": 0.0033782851600131785,
+          "year": 0.01647603670120064,
+          "language": 0.032399929356998966,
+          "popularity": 0.0936543746622216,
+          "flags": 0.0
+        },
+        "intensity": {
+          "plot_embedding": 0.44713112678660416,
+          "genres": 0.21965323341803844,
+          "runtime": 0.0026188582528003128,
+          "year": 0.012193277441917975,
+          "language": 0.0027431685815835698,
+          "popularity": 0.05023598629432761,
+          "flags": 0.0
+        },
+        "pace": {
+          "plot_embedding": 0.3368122062466142,
+          "genres": 0.17957443157063677,
+          "runtime": 0.0030404489804104124,
+          "year": 0.011319588177900144,
+          "language": 0.03214958280315816,
+          "popularity": 0.08595445514005941,
+          "flags": 0.0
+        },
+        "humor": {
+          "plot_embedding": 0.2963388594178835,
+          "genres": 0.23211458677112776,
+          "runtime": 0.003251274270187648,
+          "year": 0.011202222525828021,
+          "language": 0.006627613536400639,
+          "popularity": 0.0725974412019686,
+          "flags": 0.0
+        },
+        "darkness": {
+          "plot_embedding": 0.36910367960972995,
+          "genres": 0.22148665037249052,
+          "runtime": 0.003014052077010789,
+          "year": 0.01699272739808787,
+          "language": 0.015533257949948576,
+          "popularity": 0.08380875258218953,
+          "flags": 0.0
+        },
+        "hopefulness": {
+          "plot_embedding": 0.4723039448231022,
+          "genres": 0.13561618539688378,
+          "runtime": 0.010331863310066192,
+          "year": 0.05430605846145976,
+          "language": 0.03055891123921538,
+          "popularity": 0.03878222349553649,
+          "flags": 0.0
+        },
+        "emotional_intensity": {
+          "plot_embedding": 0.3765801163331892,
+          "genres": 0.13925357924856543,
+          "runtime": 0.009459988141689864,
+          "year": 0.02324042703280488,
+          "language": 0.0016064567329371437,
+          "popularity": 0.12252454242357483,
+          "flags": 0.0
+        },
+        "romance": {
+          "plot_embedding": 0.3808646649440691,
+          "genres": 0.15311521836510894,
+          "runtime": 0.011963411008755313,
+          "year": 0.015526873220791094,
+          "language": 0.009987243255198739,
+          "popularity": 0.043089115876562174,
+          "flags": 0.0
+        },
+        "suspense": {
+          "plot_embedding": 0.29415674762892874,
+          "genres": 0.19403189717501668,
+          "runtime": 0.0012698895051844925,
+          "year": 0.025502911562528766,
+          "language": 0.0016504748895920193,
+          "popularity": 0.12420991468318056,
+          "flags": 0.0
+        },
+        "complexity": {
+          "plot_embedding": 0.4316854325085885,
+          "genres": 0.17335735527066332,
+          "runtime": 0.008679879101408538,
+          "year": 0.017509333872200012,
+          "language": 0.007156605621630629,
+          "popularity": 0.09880192130595178,
+          "flags": 0.0
+        },
+        "realism": {
+          "plot_embedding": 0.3928502330527858,
+          "genres": 0.2018211786838485,
+          "runtime": 0.011340154049504992,
+          "year": 0.020519443003413778,
+          "language": 0.011137493068691839,
+          "popularity": 0.07571482444940941,
+          "flags": 0.0
+        },
+        "inspiration": {
+          "plot_embedding": 0.49740055539026934,
+          "genres": 0.060870108592757,
+          "runtime": 0.026501457876318878,
+          "year": 0.03181749144678176,
+          "language": 0.024104526930224038,
+          "popularity": 0.05993437540726383,
+          "flags": 0.0
+        }
+      },
+      "permutation_mae_increase": {
+        "plot_embedding": 0.019213118965909836,
+        "genres": 0.06188491168523551,
+        "runtime": 0.0013334859554176071,
+        "year": 0.006530789935581422,
+        "language": 0.0036155358323714804,
+        "popularity": 0.03040089136547732,
+        "flags": 0.0
+      },
+      "top_metadata_features": [
+        {
+          "feature": "vote_average_scaled",
+          "mean_abs_shap": 0.053003941300387436
+        },
+        {
+          "feature": "genre=comedy",
+          "mean_abs_shap": 0.0351603270955483
+        },
+        {
+          "feature": "genre=drama",
+          "mean_abs_shap": 0.02907982677711776
+        },
+        {
+          "feature": "release_year_scaled",
+          "mean_abs_shap": 0.02138386590374289
+        },
+        {
+          "feature": "genre=romance",
+          "mean_abs_shap": 0.019400386809579895
+        },
+        {
+          "feature": "genre=action",
+          "mean_abs_shap": 0.018131739897496574
+        },
+        {
+          "feature": "log1p_popularity",
+          "mean_abs_shap": 0.014726827787135117
+        },
+        {
+          "feature": "genre=thriller",
+          "mean_abs_shap": 0.014543725798200176
+        },
+        {
+          "feature": "genre=horror",
+          "mean_abs_shap": 0.014450744550266879
+        },
+        {
+          "feature": "genre=family",
+          "mean_abs_shap": 0.0136941175249045
+        }
+      ],
+      "top_groups": [
+        "plot_embedding",
+        "genres",
+        "popularity"
+      ],
+      "seconds": 110.71897379099391
+    }
+  }
+}
