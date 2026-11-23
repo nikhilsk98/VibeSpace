@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from vibespace_model.data_loader import load_dataset
-from vibespace_model.errors import LeakageError
+from vibespace_model.errors import DataValidationError, LeakageError
 from vibespace_model.features import FEATURE_GROUPS, FeatureBuilder, _as_genre_list, assert_no_leakage
 
 
@@ -34,7 +37,6 @@ def test_shapes_and_groups(cfg, data) -> None:
     assert {"release_year_scaled", "release_year_missing"} <= set(builder.feature_names)
     assert {"log1p_popularity", "log1p_vote_count", "vote_average_scaled"} <= set(builder.feature_names)
     assert builder.group_of("genre=comedy") == "genres"
-    assert "flag_not_in_catalog" not in builder.feature_names  # configured but absent column is left out
     with pytest.raises(KeyError):
         builder.group_of("nope")
 
@@ -141,3 +143,38 @@ def test_genre_parsing_variants() -> None:
     assert _as_genre_list(float("nan")) == []
     assert _as_genre_list(np.array(["Action", " "], dtype=object)) == ["action"]
     assert _as_genre_list(5) == []
+
+
+def _with_extra_flag(cfg, allow: bool):
+    flags = [*cfg.features["flag_columns"], "flag_not_in_catalog"]
+    return replace(cfg, features={**cfg.features, "flag_columns": flags, "allow_missing_columns": allow})
+
+
+def test_missing_flag_column_stops_the_loader(cfg) -> None:
+    expected = r"missing columns the model needs: \['flag_not_in_catalog'\]"
+    with pytest.raises(DataValidationError, match=expected):
+        load_dataset(_with_extra_flag(cfg, allow=False))
+
+
+def test_missing_flag_column_stops_the_builder(cfg, data) -> None:
+    strict = _with_extra_flag(cfg, allow=False)
+    with pytest.raises(DataValidationError, match="flag_not_in_catalog"):
+        FeatureBuilder(strict.features, cfg.data["embedding_dim"]).fit(data.catalog, data.embeddings)
+
+
+def test_missing_flag_column_allowed_explicitly(cfg, caplog) -> None:
+    relaxed = _with_extra_flag(cfg, allow=True)
+    dataset = load_dataset(relaxed)
+    builder = FeatureBuilder(relaxed.features, cfg.data["embedding_dim"])
+    with caplog.at_level("WARNING"):
+        builder.fit(dataset.catalog, dataset.embeddings)
+    assert "flag_not_in_catalog" not in builder.feature_names
+    assert "flag_short_overview" in builder.feature_names
+    assert "allow_missing_columns" in caplog.text
+
+
+def test_missing_flag_is_off_by_default_in_the_real_config() -> None:
+    from vibespace_model.config import load_config
+
+    real = load_config(Path(__file__).resolve().parents[1] / "configs" / "model_config.yaml")
+    assert real.features["allow_missing_columns"] is False

@@ -195,7 +195,10 @@ def validate_catalog(catalog: pd.DataFrame, required: list[str]) -> None:
         raise DataValidationError(f"duplicate movieIds in catalog: {dupes}")
     missing = [c for c in required if c not in catalog.columns]
     if missing:
-        raise DataValidationError(f"catalog is missing columns: {missing}")
+        raise DataValidationError(
+            f"catalog is missing columns the model needs: {missing}. Check the data pipeline outputs, or set "
+            "features.allow_missing_columns: true to train without missing flag columns on purpose."
+        )
 
 
 def validate_embeddings(embeddings: np.ndarray, index: pd.DataFrame, dim: int) -> None:
@@ -225,6 +228,8 @@ def _required_catalog_columns(cfg: ModelConfig) -> list[str]:
         feats["language_column"],
     ]
     columns += list(feats.get("popularity_columns", [])) + list(feats.get("extra_numeric_columns", []))
+    if not feats.get("allow_missing_columns", False):
+        columns += list(feats.get("flag_columns", []))
     columns += list(cfg.slices)
     return list(dict.fromkeys(columns))
 

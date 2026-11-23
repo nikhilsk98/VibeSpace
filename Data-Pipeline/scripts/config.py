@@ -157,19 +157,34 @@ class PipelineConfig:
         return self.tmdb_dir / "movies"
 
     @property
+    def is_sample(self) -> bool:
+        """True for a sample run (``sample_size`` set)."""
+        return bool(self.sample_size)
+
+    @property
+    def output_dir(self) -> Path:
+        """Root of this run's interim, processed and metrics outputs.
+
+        Full runs write to ``data/`` (the DVC-versioned outputs). Sample runs write to ``data/sample/``
+        with the same layout; that folder is git- and DVC-ignored, so a sample never overwrites or
+        versions the full data. Raw inputs and caches are shared.
+        """
+        return self.data_dir / "sample" if self.is_sample else self.data_dir
+
+    @property
     def interim_dir(self) -> Path:
         """Intermediate tables between steps."""
-        return self.data_dir / "interim"
+        return self.output_dir / "interim"
 
     @property
     def processed_dir(self) -> Path:
         """Final, model-ready outputs."""
-        return self.data_dir / "processed"
+        return self.output_dir / "processed"
 
     @property
     def metrics_dir(self) -> Path:
         """Validation results, statistics, anomalies and bias metrics."""
-        return self.data_dir / "metrics"
+        return self.output_dir / "metrics"
 
     @property
     def cache_dir(self) -> Path:

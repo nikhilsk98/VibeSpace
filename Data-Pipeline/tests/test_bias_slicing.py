@@ -124,10 +124,13 @@ def test_run_bias_slicing_writes_outputs(cfg):
 def test_sample_run_keeps_committed_report(cfg):
     sample_cfg = replace(cfg, sample_size=50)
     catalog, labels, emb, index = synthetic(200)
-    write_parquet(cfg.processed_dir / CLEAN_FILE, catalog)
-    write_parquet(cfg.processed_dir / DNA_LABELS_FILE, labels)
-    save_numpy(cfg.processed_dir / EMBEDDINGS_FILE, emb)
-    write_parquet(cfg.processed_dir / EMBEDDINGS_INDEX_FILE, index)
+    # a sample run reads and writes the sample tree (data/sample/...), never the full outputs
+    write_parquet(sample_cfg.processed_dir / CLEAN_FILE, catalog)
+    write_parquet(sample_cfg.processed_dir / DNA_LABELS_FILE, labels)
+    save_numpy(sample_cfg.processed_dir / EMBEDDINGS_FILE, emb)
+    write_parquet(sample_cfg.processed_dir / EMBEDDINGS_INDEX_FILE, index)
     bs.run_bias_slicing(sample_cfg)
     assert (cfg.reports_dir / "sample" / bs.BIAS_REPORT_FILE).is_file()
     assert not (cfg.reports_dir / bs.BIAS_REPORT_FILE).exists()
+    assert (sample_cfg.metrics_dir / "bias" / bs.BIAS_METRICS_FILE).is_file()
+    assert not (cfg.metrics_dir / "bias").exists()

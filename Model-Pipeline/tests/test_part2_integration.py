@@ -82,11 +82,15 @@ def test_part2_end_to_end(tree) -> None:
         )
         == EXIT_OK
     )
-    reused = json.loads((out / "part2_summary.json").read_text())
+    # a fast run writes to reports/fast/ and leaves the full-run reports in reports/part2 untouched
+    assert json.loads((out / "part2_summary.json").read_text())["mode"] == "search"
+    fast = load_config(tree["config"])
+    fast.fast_reports = True
+    reused = json.loads((fast.reports_subdir("part2") / "part2_summary.json").read_text())
     assert reused["mode"] == "reuse" and reused["studies"] == {}
     assert reused["selected"] == summary["selected"]
     assert reused["variants"][summary["selected"]]["val"]["overall"]["mae"] == pytest.approx(
         summary["variants"][summary["selected"]]["val"]["overall"]["mae"]
     )
-    skipped = run_sensitivity(cfg)
+    skipped = run_sensitivity(fast)
     assert skipped["skipped"] is True
